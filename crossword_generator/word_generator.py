@@ -6,8 +6,7 @@ n = 15
 grid = [[' ' for j in range(n)] for i in range(n)]
 grid_str = '\n'.join(''.join(x) for x in grid)
 
-example_grid_str =\
-    '''   #   A  #    
+example_grid_str = '''   #   A  #    
    #   N  #    
    #TANGELOTREE
       #E    ###
@@ -22,8 +21,7 @@ STRANGELY#
 ###    M#      
 CLAUDEMONET#   
     #  N   #   
-    #  S   #
-'''
+    #  S   #  '''
 example_grid = [list(x) for x in example_grid_str.split('\n')]
 
 grid = example_grid
@@ -60,6 +58,8 @@ def transpose(grid):
 
 def main():
   with open('./data/wordlist.txt', 'r') as f:
+    global grid_str
+
     buckets = [[[set([]) for ch in range(26)]
                 for ch_pos in range(length)]
                for length in range(n + 1)]
@@ -73,11 +73,13 @@ def main():
     # horizontal
     # words_to_generate = re.split('[\n#]+', grid_str)
     words_to_generate = []
+    words_to_generate_index = []
 
     # https://stackoverflow.com/questions/28828921/python-split-string-and-get-position
     # https://stackoverflow.com/questions/2078915/a-regular-expression-to-exclude-a-word-string
     for x in re.finditer('[^\n#]+', grid_str):
       words_to_generate.append(x.group())
+      words_to_generate_index.append(x.start())
 
     # finds possible words that match criteria
     possible_words_to_generate = [{} for x in words_to_generate]
@@ -117,6 +119,7 @@ def main():
       print('i: store i, get ith word')
       print('p: prints possible words for ith word')
       print('s: set ith word')
+      print('save: save crossword')
       print('q: quit')
 
       inp = str(input()).split()
@@ -131,8 +134,17 @@ def main():
       elif inp[0] == 'p':
         print(possible_words_to_generate[i])
       elif inp[0] == 's':
+        if len(inp[1]) != len(words_to_generate[i]):
+          print('INVALID LENGTH')
+          continue
+
         words_to_generate[i] = inp[1]
-        grid_str[words_to_generate[i]] = words_to_generate[i]
+
+        grid_str = grid_str[:words_to_generate_index[i]] + words_to_generate[i] + \
+            grid_str[words_to_generate_index[i] + len(words_to_generate[i]):]
+      elif inp[0] == 'save':
+        with open('crossword.txt', 'w') as f:
+          f.write(grid_str)
 
 
 if __name__ == '__main__':
