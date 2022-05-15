@@ -1,2 +1,3 @@
-# crossword_generator
- Assists crossword generation by providing possible words
+# Crossword Generator
+
+Automates dense crossword generation. Word list from Crossword Nexus.
