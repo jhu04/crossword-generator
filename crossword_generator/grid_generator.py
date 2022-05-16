@@ -1,8 +1,8 @@
 import random
 
 
-def grid_to_string(grid):
-  return '\n'.join(''.join(row) for row in grid)
+def off_or_black(grid, r, c):
+  return r < 0 or r >= len(grid) or c < 0 or c >= len(grid[0]) or grid[r][c] == '#'
 
 
 def make_grid(n):
@@ -18,9 +18,6 @@ def make_grid(n):
   Returns:
       str: selected grid
   """
-
-  def off_or_black(grid, r, c):
-    return r < 0 or r >= n or c < 0 or c >= n or grid[r][c] == '#'
 
   def words_addition(grid, r, c):
     return 2 - (off_or_black(grid, r+1, c) or off_or_black(grid, r-1, c)) \
@@ -60,13 +57,9 @@ def make_grid(n):
           words += words_addition(grid, r, c)
         else:
           available.remove((n-1-r, n-1-c))
-          grid[r][c], grid[n-1-r][n-1-c] = ['#', '#']
+          grid[r][c], grid[n-1-r][n-1-c] = '#', '#'
           black += 2
           words += words_addition(grid, r, c) + \
               words_addition(grid, n-1-r, n-1-c)
 
   return grid
-
-
-if __name__ == '__main__':
-  make_grid()
