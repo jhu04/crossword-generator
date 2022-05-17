@@ -17,10 +17,21 @@ def extract_words(grid):
       grid (list(list(char)))
 
   Returns:
-      dict(dict(str))
+      words (dict(str, dict(int, str))):
+        - "across"/"down" (str)
+        - id (int), word (str)
+      contains_words (dict(tuple, dict(str, int))):
+        - coords (tuple)
+        - "across"/"down" (str), id (int)
   """
   words = {"across": {}, "down": {}}
+  contains_words = {}
   id = 1
+  for r in range(len(grid)):
+    for c in range(len(grid[0])):
+      if grid[r][c] != '#':
+        contains_words[(r, c)] = {"across": None, "down": None}
+
   for r in range(len(grid)):
     for c in range(len(grid[0])):
       if grid[r][c] == '#':
@@ -30,16 +41,19 @@ def extract_words(grid):
         word, x, s = True, c, ""
         while(x < len(grid[0]) and grid[r][x] != '#'):
           s += grid[r][x]
+          contains_words[(r, x)]["across"] = id
           x += 1
-        words['across'][id] = s
+        words["across"][id] = s
       if off_or_black(grid, r-1, c):
         word, x, s = True, r, ""
         while(x < len(grid) and grid[x][c] != '#'):
           s += grid[x][c]
+          contains_words[(x, c)]["down"] = id
           x += 1
-        words['down'][id] = s
+        words["down"][id] = s
       id += word
-  return words
+
+  return words, contains_words
 
 
 def grid_equality(grid1, grid2):

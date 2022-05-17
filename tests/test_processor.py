@@ -1,3 +1,4 @@
+from operator import contains
 from more_itertools import sample
 from crossword_generator.processor import extract_words, string_to_grid
 
@@ -7,4 +8,6 @@ IJKL
 #MNO"""
 
 if __name__ == '__main__':
-  print(extract_words(string_to_grid(sample_grid)))
+  words, contains_words = extract_words(string_to_grid(sample_grid))
+  print(words)
+  print(contains_words)
