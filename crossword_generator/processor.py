@@ -24,13 +24,10 @@ def extract_words(grid):
         - coords (tuple)
         - "across"/"down" (str), id (int)
   """
-  words = {"across": {}, "down": {}}
-  contains_words = {}
   id = 1
-  for r in range(len(grid)):
-    for c in range(len(grid[0])):
-      if grid[r][c] != '#':
-        contains_words[(r, c)] = {"across": None, "down": None}
+  words = {"across": {}, "down": {}}
+  contains_words = {(r, c): {"across": None, "down": None}
+                    for r in range(len(grid)) for c in range(len(grid[0]))}
 
   for r in range(len(grid)):
     for c in range(len(grid[0])):
