@@ -19,7 +19,7 @@ class Grid:
     # buckets: tuple[tuple[tuple[set]]]
     # buckets[len][pos][char] = possible_words
     
-    def __init__(self, squares=(), buckets=None):
+    def __init__(self, squares=(), buckets=None) -> None:
         if (squares == None):
             raise ValueError('Grid must not be None')
         if (len(squares) > 0 and len(squares) != len(squares[0])):
@@ -39,10 +39,10 @@ class Grid:
         self.len_remaining_words = self.remaining_words.qsize()
         self.buckets = buckets
         
-    def __str__(self):
+    def __str__(self) -> str:
         return grid_to_string(self.squares)
     
-    def valid(self):
+    def valid(self, debug=False) -> bool:
         """Checks if grid has a valid solution
 
         Returns:
@@ -52,6 +52,9 @@ class Grid:
         # print(words)
         for direction, more_info in words.items():
             for id, word in more_info.items():
+                if debug:
+                    print("WORD: " + word)
+                    print("POSSIBLE WORDS: " + str(possible_words(word=word, buckets=self.buckets)))
                 if possible_words(word=word, buckets=self.buckets) == set():
                     return False
         return True
@@ -88,13 +91,14 @@ class Grid:
         """Generates possible grids after filling in one word
 
         Returns:
-            generator[Grid]: A generator containing the first 5 possible grids
+            generator[Grid]: A generator containing the first k possible grids
         """
         cur_entry = self.remaining_words.get()
         
         possible = possible_words(word=cur_entry.word, buckets=self.buckets)
         
-        res = (self.fill(Entry(grid=cur_entry.grid, word=x, r=cur_entry.r, c=cur_entry.c, direction=cur_entry.direction)) for i, x in enumerate(possible) if i < 5)
+        k = 30
+        res = (self.fill(Entry(grid=cur_entry.grid, word=x, r=cur_entry.r, c=cur_entry.c, direction=cur_entry.direction)) for i, x in enumerate(possible) if i < k)
         # for x in res:
         #     print(x)
         return res
@@ -103,7 +107,7 @@ class Grid:
         """Solves the grid
 
         Returns:
-            Grid: Solved grid
+            Grid: Solved grid, None if no solution
         """
         # debug
         cnt = 0
@@ -124,6 +128,10 @@ class Grid:
             if p.len_remaining_words == 0:
                 return p
             
+            cnt += 1
+            if cnt % 10 == 0:
+                print(f'{cnt} valid grids processed, current grid:\n' + str(p))
+            
             # print("NEXT GRIDS:")
             for p_next in p.possible_next_grids():
                 pq.put(p_next)
@@ -135,21 +143,23 @@ class Grid:
 def main():
     buckets = generate_buckets()
     
-    # squares = (('.', 'S', 'S'), ('S', '.', '.'), ('S', '.', 'S'))
-    # from word_generator import example_grid_str
-    # from processor import string_to_grid
+    # squares = (('Y', 'S', 'S'), ('S', '.', '.'), ('S', '.', 'S'))
+    from word_generator import example_grid_str
+    from processor import string_to_grid
     
-    # squares = string_to_grid(example_grid_str)
-    # print(len(squares), len(squares[0]))
+    squares = string_to_grid(example_grid_str)
     
     from grid_generator import make_grid
     
     squares = make_grid(7)
-    print(squares)
+    
+    print('INITIAL GRID:\n' + grid_to_string(squares))
     
     g = Grid(squares, buckets=buckets)
     
-    print(g.solve())
+    solved = g.solve()
+    
+    print('SOLVED GRID:\n' + str(solved))
     
 if __name__ == '__main__':
     main()

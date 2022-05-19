@@ -4,6 +4,7 @@ from grid_generator import off_or_black
 
 @dataclass(order=True)
 class Entry:
+    reverse_num_blank_squares: int
     num_blank_sqaures: int
     
     word: str
@@ -29,5 +30,7 @@ class Entry:
         self.direction = direction
         
         self.num_blank_sqaures = sum(1 for ch in word if ch == '.')
+        self.reverse_num_blank_squares = grid.n - self.num_blank_sqaures
+        # self.reverse_num_blank_squares = grid.n - len(self.word)
         
         self.possible_answers = possible_answers

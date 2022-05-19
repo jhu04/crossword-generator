@@ -1,3 +1,4 @@
+from functools import lru_cache
 import re
 
 from queue import Empty, PriorityQueue
@@ -9,21 +10,38 @@ n = 15
 grid = [['.' for j in range(n)] for i in range(n)]
 grid_str = '\n'.join(''.join(x) for x in grid)
 
-example_grid_str = '''   #   A  #    
-   #   N  #    
-   #TANGELOTREE
-      #E    ###
-STRANGELY#     
-###    S#      
-     # A   #   
-    #  N  #    
-   #   D #     
-      #D    ###
-     #DESDEMONA
-###    M#      
-CLAUDEMONET#   
-    #  N   #   
-    #  S   #   '''
+# example_grid_str = '''   #   A  #    
+#    #   N  #    
+#    #TANGELOTREE
+#       #E    ###
+# STRANGELY#     
+# ###    S#      
+#      # A   #   
+#     #  N  #    
+#    #   D #     
+#       #D    ###
+#      #DESDEMONA
+# ###    M#      
+# CLAUDEMONET#   
+#     #  N   #   
+#     #  S   #   '''
+
+example_grid_str = '''...#...A..#....
+...#...N..#....
+...#TANGELOTREE
+......#E....###
+STRANGELY#.....
+###....S#......
+.....#.A...#...
+....#..N..#....
+...#...D.#.....
+......#D....###
+.....#DESDEMONA
+###....M#......
+CLAUDEMONET#...
+....#..N...#...
+....#..S...#...'''
+
 example_grid = [list(x) for x in example_grid_str.split('\n')]
 
 grid = example_grid
@@ -79,7 +97,7 @@ def generate_buckets():
   """
   with open('../data/wordlist.txt', 'r') as f:
     buckets = [[[set([]) for ch in range(26)]
-                for ch_pos in range(length)]
+                for ch_pos in range(length + 1)]
                for length in range(n + 1)]
 
     for x in f:
@@ -88,22 +106,38 @@ def generate_buckets():
         for i, ch in enumerate(x):
           buckets[len(x)][i][upper_to_int(ch)].add(x)
     
+    # preprocess word = '.' * len
+    for length in range(n + 1):
+      possible = set()
+      for possible_i in buckets[length]:
+        for possible_ch in possible_i:
+            possible = possible.union(possible_ch)
+      
+      buckets[length][length] = possible
+    
     return buckets
 
+# https://stackoverflow.com/questions/30730983/make-lru-cache-ignore-some-of-the-function-arguments
+from cachetools import cached
+from cachetools.keys import hashkey
+
+@cached(cache={}, key=lambda buckets, word: hashkey(word))
 def possible_words(word, buckets):
-  possible = set([])
+  possible = set()
+  first = True
 
   if word == '.' * len(word):
-    for possible_i in buckets[len(word)]:
-      for possible_ch in possible_i:
-          possible = possible.union(possible_ch)
+    return buckets[len(word)][len(word)]
   else:
     for i, ch in enumerate(word):
       if ch == '.':
         continue
 
-      if possible == set([]):
+      if first:
         possible = buckets[len(word)][i][upper_to_int(ch)]
+        first = False
+      elif possible == set():
+        return set()
       else:
         possible = possible.intersection(
             buckets[len(word)][i][upper_to_int(ch)])
