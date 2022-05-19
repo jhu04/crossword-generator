@@ -43,6 +43,11 @@ class Grid:
         return grid_to_string(self.squares)
     
     def valid(self):
+        """Checks if grid has a valid solution
+
+        Returns:
+            bool: True if the grid has a valid solution, False else
+        """
         words = extract_words(self.squares)[0]
         # print(words)
         for direction, more_info in words.items():
@@ -52,6 +57,18 @@ class Grid:
         return True
     
     def fill(self, entry):
+        """Fills the grid with one word
+
+        Args:
+            entry (Entry): An Entry describing the word to be filled
+
+        Raises:
+            ValueError: Raises if self conflicts with entry.grid; see comment below 
+
+        Returns:
+            Grid: Grid with filled entry
+        """
+        
         if self != entry.grid:
             # techinically self is unnecessary, but this check is likely good to make sure the right grid is modified
             raise ValueError('Self should be equal to entry.grid')
@@ -68,6 +85,11 @@ class Grid:
         return res
     
     def possible_next_grids(self):
+        """Generates possible grids after filling in one word
+
+        Returns:
+            generator[Grid]: A generator containing the first 5 possible grids
+        """
         cur_entry = self.remaining_words.get()
         
         possible = possible_words(word=cur_entry.word, buckets=self.buckets)
@@ -78,6 +100,11 @@ class Grid:
         return res
     
     def solve(self):
+        """Solves the grid
+
+        Returns:
+            Grid: Solved grid
+        """
         # debug
         cnt = 0
         
