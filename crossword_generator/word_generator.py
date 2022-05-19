@@ -5,8 +5,8 @@ from queue import Queue
 
 n = 15
 
-# '#' = black square, ' ' = blank square
-grid = [[' ' for j in range(n)] for i in range(n)]
+# '#' = black square, '.' = blank square
+grid = [['.' for j in range(n)] for i in range(n)]
 grid_str = '\n'.join(''.join(x) for x in grid)
 
 example_grid_str = '''   #   A  #    
@@ -15,7 +15,6 @@ example_grid_str = '''   #   A  #
       #E    ###
 STRANGELY#     
 ###    S#      
-##     S#      
      # A   #   
     #  N  #    
    #   D #     
@@ -24,7 +23,7 @@ STRANGELY#
 ###    M#      
 CLAUDEMONET#   
     #  N   #   
-    #  S   #  '''
+    #  S   #   '''
 example_grid = [list(x) for x in example_grid_str.split('\n')]
 
 grid = example_grid
@@ -94,13 +93,13 @@ def generate_buckets():
 def possible_words(word, buckets):
   possible = set([])
 
-  if word.strip() == '':
+  if word == '.' * len(word):
     for possible_i in buckets[len(word)]:
       for possible_ch in possible_i:
           possible = possible.union(possible_ch)
   else:
     for i, ch in enumerate(word):
-      if ch == ' ':
+      if ch == '.':
         continue
 
       if possible == set([]):
@@ -138,7 +137,7 @@ def main():
           possible = possible_ch.union(ch)
     else:
       for i, ch in enumerate(x):
-        if ch == ' ':
+        if ch == '.':
           continue
 
         if possible == set([]):

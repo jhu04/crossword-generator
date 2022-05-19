@@ -28,6 +28,6 @@ class Entry:
             raise ValueError('direction must be "across" or "down"')
         self.direction = direction
         
-        self.num_blank_sqaures = sum(1 for ch in word if ch == ' ')
+        self.num_blank_sqaures = sum(1 for ch in word if ch == '.')
         
         self.possible_answers = possible_answers
