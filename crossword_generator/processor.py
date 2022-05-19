@@ -1,4 +1,4 @@
-from crossword_generator.grid_generator import off_or_black
+from grid_generator import off_or_black
 
 
 def grid_to_string(grid):
