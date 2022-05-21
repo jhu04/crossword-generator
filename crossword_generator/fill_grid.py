@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from queue import PriorityQueue
 import random
-from .entry import Entry
+from .Entry import Entry
 from .processor import extract_words, grid_to_string
 from .word_generator import generate_buckets, possible_words
 
