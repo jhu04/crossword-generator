@@ -1,151 +1,141 @@
-import re
-
-n = 15
-
-# '#' = black square, ' ' = blank square
-grid = [[' ' for j in range(n)] for i in range(n)]
-grid_str = '\n'.join(''.join(x) for x in grid)
-
-example_grid_str = '''   #   A  #    
-   #   N  #    
-   #TANGELOTREE
-      #E    ###
-STRANGELY#     
-###    S#      
-##     S#      
-     # A   #   
-    #  N  #    
-   #   D #     
-      #D    ###
-     #DESDEMONA
-###    M#      
-CLAUDEMONET#   
-    #  N   #   
-    #  S   #  '''
-example_grid = [list(x) for x in example_grid_str.split('\n')]
-
-grid = example_grid
-grid_str = example_grid_str
+from cachetools.keys import hashkey
+from cachetools import cached
 
 
 def upper_to_int(ch):
-  """Returns an integer based on the mapping {'A': 0, ..., 'Z': 25}
+    """Returns an integer based on the mapping {'A': 0, ..., 'Z': 25}. O(1) runtime.
 
-  Args:
-      ch (char): character to be mapped
+    Args:
+        ch (char): character to be mapped
 
-  Returns:
-      int: mapped value
-  """
-  return ord(ch) - ord('A')
+    Returns:
+        int: mapped value
+    """
+    return ord(ch) - ord('A')
 
+def bit_mask(s, bits=0, fill='.') -> str:
+    """Returns s masked by bits. O(len(s)) runtime
 
-def transpose(grid):
-  """Returns the transpose of a grid
+    Args:
+        s (int): The string to be masked.
+        bits (int): Bitmask. Defaults to 0.
+        fill (str): Character to fill characers where the bit is 0. Defaults to '.'.
 
-  Args:
-      grid (List of List): grid
+    Raises:
+        ValueError: Raises if the bit mask contains too many bits
+        ValueError: Raises if bits is not of type int
 
-  Returns:
-      List of List: transpose
-  """
-  res = grid
-  for i in len(res):
-    for j in len(i):
-      res[i][j] = grid[j][i]
-  return res
+    Returns:
+        str: The masked string
+    """
+    if isinstance(bits, int):
+        if 1 << len(s) <= bits:
+            raise ValueError('Invalid bit mask (bits too large)')
+        
+        res = []
+        cnt = 0
+        while bits > 0:
+            res.append(s[-1 - cnt] if bits % 2 == 1 else fill)
+            bits = bits >> 1
+            cnt += 1
+        
+        res.append(fill * (len(s) - len(res)))
+        return ''.join(res)[::-1]
+    else:
+        raise ValueError('bits must be of type int')
 
+def pad(s, length, fill='.') -> str:
+    return ''.join((s, fill * (length - len(s))))
 
+def generate_buckets(n=15,k=7):
+    """Generates buckets
+
+    Args:
+        n (int): Size of grid and maximum word length. Defaults to 15.
+        k (int): Maximum word length stored in dictionary. Defaults to 10.
+
+    Returns:
+        dict[str -> list]: Maps from a string (e.g. 'p__y') to a set of valid words (e.g. {'penny', ...}). 
+            For words of length greater than k, the subset of all possible clues for the first k characters 
+            padded by '.' are stored
+    """
+    with open('../data/wordlist.txt', 'r') as f:
+        buckets = {}
+
+        for x in f:
+            x = x.strip()
+            if len(x) <= n and x.isalpha():
+                len_mask = min(len(x), k)
+                # splicing is O(n), would like to avoid
+                # idk if interpreter optimizes putting the if statement out of the loop, did it myself 
+                # just in case
+                if len_mask == len(x):
+                    for i in range(1 << len_mask):
+                        key = bit_mask(x, i)
+                        
+                        if not key in buckets:
+                            buckets[key] = [x]
+                        else:
+                            buckets[key].append(x)
+                else:
+                    for i in range(1 << len_mask):
+                        key = pad(bit_mask(x[:len_mask], i), len(x))
+                        
+                        if not key in buckets:
+                            buckets[key] = [x]
+                        else:
+                            buckets[key].append(x)
+                
+        # TODO: preprocess '.' * n to return all possible words of length n for n >= k
+
+        return buckets
+
+# https://stackoverflow.com/questions/30730983/make-lru-cache-ignore-some-of-the-function-arguments
+@cached(cache={}, key=lambda buckets, word: hashkey(word))
+def possible_words(word, buckets):
+    possible = set()
+    first = True
+
+    if word == '.' * len(word):
+        return buckets[len(word)][len(word)]
+    else:
+        for i, ch in enumerate(word):
+            if ch == '.':
+                continue
+
+            if first:
+                possible = buckets[len(word)][i][upper_to_int(ch)]
+                first = False
+            elif possible == set():
+                return set()
+            else:
+                possible = possible.intersection(
+                    buckets[len(word)][i][upper_to_int(ch)])
+
+    return possible
+
+# unit testing
 def main():
-  with open('./data/wordlist.txt', 'r') as f:
-    global grid_str
-
-    buckets = [[[set([]) for ch in range(26)]
-                for ch_pos in range(length)]
-               for length in range(n + 1)]
-
-    for x in f:
-      x = x.strip()
-      if len(x) <= n and x.isalpha():
-        for i, ch in enumerate(x):
-          buckets[len(x)][i][upper_to_int(ch)].add(x)
-
-    # horizontal
-    # words_to_generate = re.split('[\n#]+', grid_str)
-    words_to_generate = []
-    words_to_generate_index = []
-
-    # https://stackoverflow.com/questions/28828921/python-split-string-and-get-position
-    # https://stackoverflow.com/questions/2078915/a-regular-expression-to-exclude-a-word-string
-    for x in re.finditer('[^\n#]+', grid_str):
-      words_to_generate.append(x.group())
-      words_to_generate_index.append(x.start())
-
-    # finds possible words that match criteria
-    possible_words_to_generate = [{} for x in words_to_generate]
-    for word_i, x in enumerate(words_to_generate):
-      print(f'x: {x}')
-
-      possible = set([])
-
-      if x.strip() == '':
-        for possible_i in buckets[len(x)]:
-          for possible_ch in possible_i:
-            possible = possible_ch.union(ch)
-      else:
-        for i, ch in enumerate(x):
-          if ch == ' ':
-            continue
-
-          if possible == set([]):
-            possible = buckets[len(x)][i][upper_to_int(ch)]
-          else:
-            possible = possible.intersection(
-                buckets[len(x)][i][upper_to_int(ch)])
-
-      print(f'WORD: {x}')
-      print(f'POSSIBLE WORDS: {possible}')
-
-      possible_words_to_generate[word_i] = possible
-
-    print(possible_words_to_generate)
-
-    # interface
-    inp = ['']
-    i = 0
-    while inp[0] != 'q':
-      print('ACTIONS:')
-      print('g: print grid')
-      print('i: store i, get ith word')
-      print('p: prints possible words for ith word')
-      print('s: set ith word')
-      print('save: save crossword')
-      print('q: quit')
-
-      inp = str(input()).split()
-      if len(inp) == 0:
-        print('invalid')
-      elif inp[0] == 'g':
-        print(grid_str)
-      elif inp[0] == 'i':
-        i = int(inp[1])
-        print(f'WORD: {words_to_generate[i]}')
-        print(f'LEN: {len(words_to_generate[i])}')
-      elif inp[0] == 'p':
-        print(possible_words_to_generate[i])
-      elif inp[0] == 's':
-        if len(inp[1]) != len(words_to_generate[i]):
-          print('INVALID LENGTH')
-          continue
-
-        words_to_generate[i] = inp[1]
-
-        grid_str = grid_str[:words_to_generate_index[i]] + words_to_generate[i] + \
-            grid_str[words_to_generate_index[i] + len(words_to_generate[i]):]
-      elif inp[0] == 'save':
-        with open('crossword.txt', 'w') as f:
-          f.write(grid_str)
-
-
+    # print(bit_mask('abcdef', int('010011', 2)))
+    # print(pad('a', 2))
+    
+    import json
+    
+    buckets = generate_buckets()
+    # print([(key, buckets[key]) for key in buckets if len(key) <= 2])
+    
+    # from sys import getsizeof
+    # print(getsizeof(buckets))
+    
+    # https://stackoverflow.com/questions/8230315/how-to-json-serialize-sets
+    # class SetEncoder(json.JSONEncoder):
+    #     def default(self, obj):
+    #         if isinstance(obj, set):
+    #             return list(obj)
+    #         return json.JSONEncoder.default(self, obj)
+    
+    with open('buckets.json', 'w') as f:
+        f.write(json.dumps(buckets))
+    
 if __name__ == '__main__':
-  main()
+    main()
