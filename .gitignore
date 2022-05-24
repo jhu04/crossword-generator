@@ -1,2 +1,6 @@
-wordlist.txt
+data/
 __pycache__/
+crossword_generator/buckets/
+crossword_generator/buckets.zip
+crossword_generator/buckets_7_8_1.json
+crossword_generator/buckets_7_8_2.json

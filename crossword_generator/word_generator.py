@@ -1,6 +1,4 @@
-from cachetools.keys import hashkey
-from cachetools import cached
-
+from functools import cache
 
 def upper_to_int(ch):
     """Returns an integer based on the mapping {'A': 0, ..., 'Z': 25}. O(1) runtime.
@@ -47,13 +45,11 @@ def bit_mask(s, bits=0, fill='.') -> str:
 def pad(s, length, fill='.') -> str:
     return ''.join((s, fill * (length - len(s))))
 
-def generate_buckets(n=15,k=7):
+def generate_buckets(n=15,k=10):
     """Generates buckets
-
     Args:
         n (int): Size of grid and maximum word length. Defaults to 15.
         k (int): Maximum word length stored in dictionary. Defaults to 10.
-
     Returns:
         dict[str -> list]: Maps from a string (e.g. 'p__y') to a set of valid words (e.g. {'penny', ...}). 
             For words of length greater than k, the subset of all possible clues for the first k characters 
@@ -90,52 +86,19 @@ def generate_buckets(n=15,k=7):
 
         return buckets
 
-# https://stackoverflow.com/questions/30730983/make-lru-cache-ignore-some-of-the-function-arguments
-@cached(cache={}, key=lambda buckets, word: hashkey(word))
-def possible_words(word, buckets):
-    possible = set()
-    first = True
-
-    if word == '.' * len(word):
-        return buckets[len(word)][len(word)]
-    else:
-        for i, ch in enumerate(word):
-            if ch == '.':
-                continue
-
-            if first:
-                possible = buckets[len(word)][i][upper_to_int(ch)]
-                first = False
-            elif possible == set():
-                return set()
-            else:
-                possible = possible.intersection(
-                    buckets[len(word)][i][upper_to_int(ch)])
-
-    return possible
 
 # unit testing
 def main():
     # print(bit_mask('abcdef', int('010011', 2)))
     # print(pad('a', 2))
     
-    import json
-    
-    buckets = generate_buckets()
+    # buckets = generate_buckets()
     # print([(key, buckets[key]) for key in buckets if len(key) <= 2])
     
     # from sys import getsizeof
     # print(getsizeof(buckets))
-    
-    # https://stackoverflow.com/questions/8230315/how-to-json-serialize-sets
-    # class SetEncoder(json.JSONEncoder):
-    #     def default(self, obj):
-    #         if isinstance(obj, set):
-    #             return list(obj)
-    #         return json.JSONEncoder.default(self, obj)
-    
-    with open('buckets.json', 'w') as f:
-        f.write(json.dumps(buckets))
+
+    return
     
 if __name__ == '__main__':
     main()
