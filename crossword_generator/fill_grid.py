@@ -44,7 +44,7 @@ class Grid:
     res_remaining_words_cnt, res_remaining_words_time = 0, 0
 
     # TODO: optimization: only change words that are needed to be changed in extract_words?
-    def __init__(self, squares=(), remaining_words=PriorityQueue(), buckets=None, buckets_split=()) -> None:
+    def __init__(self, squares=(), remaining_word_coordinates=PriorityQueue(), buckets=None, buckets_split=()) -> None:
         if (squares == None):
             raise ValueError('Grid must not be None')
         if (len(squares) > 0 and len(squares) != len(squares[0])):
@@ -55,23 +55,23 @@ class Grid:
         
         s = time()
         
-        if remaining_words != PriorityQueue():
-            self.remaining_words = PriorityQueue()
+        if remaining_word_coordinates != PriorityQueue():
+            self.remaining_word_coordinates = PriorityQueue()
             words, contains_words = extract_words(self.squares)
             for coords, x in contains_words.items():
                 for direction, id in x.items():
                     word = words[direction][id]
                     if '.' in word:
-                        self.remaining_words.put(
+                        self.remaining_word_coordinates.put(
                             Entry(grid=self, word=word, r=coords[0], c=coords[1], direction=direction))
         else:
-            self.remaining_words = remaining_words
+            self.remaining_word_coordinates = remaining_word_coordinates
         
         global res_remaining_words_cnt, res_remaining_words_time
         res_remaining_words_cnt += 1
         res_remaining_words_time += time() - s
 
-        self.len_remaining_words = self.remaining_words.qsize()
+        self.len_remaining_words = self.remaining_word_coordinates.qsize()
         # self.buckets = buckets
         # self.buckets_split = buckets_split
 
@@ -151,6 +151,11 @@ class Grid:
         s = time()
         words = extract_words(self.squares)[0]
         # print(words)
+        
+        # optimization: do not need to check if previously filled words are valid
+        # for x in self.remaining_word_coordinates:
+            
+        
         for direction, more_info in words.items():
             for id, word in more_info.items():
                 if debug:
@@ -236,7 +241,7 @@ class Grid:
         res_squares_cnt += 1
         res_squares_time += time() - s
 
-        res = Grid(squares=res_squares, remaining_words=self.remaining_words)
+        res = Grid(squares=res_squares, remaining_word_coordinates=self.remaining_word_coordinates)
         
         global res_init_cnt, res_init_time
         res_init_cnt += 1
@@ -257,9 +262,9 @@ class Grid:
         
         s = time()
         
-        cur_entry = self.remaining_words.get()
+        cur_entry = self.remaining_word_coordinates.get()
 
-        possible = Grid.possible_words(word=cur_entry.word)
+        possible = Grid.possible_words(word=self.get_word(r=cur_entry.r, c=cur_entry.c, direction=cur_entry.direction, length=len(cur_entry.word)))
         
         k = 50
         # possible bottleneck since need to duplicate tuple?
@@ -267,7 +272,7 @@ class Grid:
                direction=cur_entry.direction)) for x in random.sample(possible, min(k, len(possible))))
         
         # python passes by reference
-        self.remaining_words.put(cur_entry)
+        self.remaining_word_coordinates.put(cur_entry)
         
         global loop_time, loop_cnt
         loop_time += time() - s
@@ -297,10 +302,11 @@ class Grid:
             # print("ORIGINAL GRID:")
             # print(p)
 
-            if not p.valid():
-                continue
+            # optimization: checking if grid valid is O(n^2), just keep going until reach grid with no possible words left
+            # if not p.valid():
+            #     continue
 
-            if p.len_remaining_words == 0:
+            if p.len_remaining_words == 0 and p.valid():
                 return p
 
             cnt += 1
