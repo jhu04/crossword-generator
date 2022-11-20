@@ -1,5 +1,4 @@
 from crossword_generator.grid import Grid
-from crossword_generator.grid_generator import make_grid
 from crossword_generator.word_generator import generate_buckets
 
 

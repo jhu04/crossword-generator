@@ -1,14 +1,15 @@
 import random
+from sortedcontainers import SortedList
+from crossword_generator.cell import Cell
+from crossword_generator.clue_processor import ClueProcessor
 from crossword_generator.direction import Direction
-from .cell import Cell
 
 
-# @dataclass(order=True)
 class Grid:
     """1-indexed N x N grid of Cells"""
 
-    def __init__(self, n):
-        assert 5 <= n <= 15
+    def __init__(self, n, set_layout=True):
+        assert 4 <= n <= 15
         self.n = n
         self.grid = [[Cell(self, r, c) for c in range(n + 2)] for r in range(n + 2)]
         for i in range(self.n + 2):
@@ -18,10 +19,16 @@ class Grid:
             self.grid[self.n + 1][i].make_wall()
         for i in range(self.n + 2):
             for j in range(self.n + 2):
-                self.get_cell(i, j).set_neighbors()
-        self.generate_layout()
+                self.cell(i, j).set_neighbors()
+        
+        self.across = {}
+        self.down = {}
+        self.clues = []
+        if set_layout:
+            self.generate_layout()
+            self.number_cells()
 
-    def get_cell(self, r, c):
+    def cell(self, r, c):
         if r < 0 or r >= len(self.grid) or c < 0 or c >= len(self.grid[0]):
             return None
         return self.grid[r][c]
@@ -33,8 +40,6 @@ class Grid:
         
         # TODO: make cleaner bounds
         MAX_WALL = int(0.17 * self.n**2 + 0.066 * self.n - 1.1)
-        MIN_WALL = int(MAX_WALL * 0.75)
-        NUM_WALL = random.randint(MIN_WALL, MAX_WALL)
         MAX_WORDS = int(0.35 * self.n**2 - 0.3 * self.n + 3)
         MIN_WORD_LENGTH = 3
         SYMMETRY_CUTOFF = 11
@@ -49,7 +54,7 @@ class Grid:
 
         def add_wall(r, c):
             nonlocal curr_wall, curr_words
-            self.get_cell(r, c).make_wall()
+            self.cell(r, c).make_wall()
             curr_wall += 1
             curr_words += added_words(r, c)
             available_cells.remove((r, c))
@@ -60,119 +65,97 @@ class Grid:
                 illegal_cells.append((i + (self.n+1)/2, (self.n+1)/2))
                 illegal_cells.append(((self.n+1)/2, i + (self.n+1)/2))
        
-        while curr_wall < NUM_WALL and curr_words < MAX_WORDS:
+        while curr_wall < MAX_WALL and curr_words < MAX_WORDS:
             (r, c) = available_cells[random.randint(0, len(available_cells) - 1)]
-            if all(self.get_cell(r, c).neighbors[dir].is_wall() \
-                or len(self.get_cell(r, c).in_direction(dir)) > MIN_WORD_LENGTH for dir in Direction):
+            if all(self.cell(r, c).neighbors[dir].is_wall() \
+                or len(self.cell(r, c).in_direction(dir)) > MIN_WORD_LENGTH for dir in Direction):
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
                     if self.n >= SYMMETRY_CUTOFF:
                         add_wall(self.n + 1 - r, self.n + 1 - c)
 
+    def number_cells(self):
+        """Assigns clue numbers to cells"""
+        id = 1
+        for r in range(1, self.n + 1):
+            for c in range(1, self.n + 1):
+                if self.cell(r, c).is_wall():
+                    continue
+                is_clue = False
+                if self.cell(r, c).neighbors[Direction.WEST].is_wall():
+                    is_clue = True
+                    self.across[id] = self.cell(r, c)
+                    self.clues.append((len(self.cell(r, c).get_across()), 'across', id))
+                if self.cell(r, c).neighbors[Direction.NORTH].is_wall():
+                    is_clue = True
+                    self.down[id] = self.cell(r, c)
+                    self.clues.append((len(self.cell(r, c).get_down()), 'down', id))
+                if is_clue:
+                    id += 1
+        self.clues.sort(key=lambda x:-x[0])
+
+    def fill(self, clue_processor: ClueProcessor):
+        """
+        Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
+        
+        *We actually want words to be entered in order of the number of blank cells. However,
+        this is pretty annoying (and probably slow) to implement.
+        """
+
+        def intersection(sets):
+            if len(sets) == 1:
+                return sets[0]
+            return sets[0].intersection(*sets[1:])
+
+        def filled(grid: Grid):
+            return grid and all(not (grid.cell(r, c).is_blank()) \
+                for c in range(1, grid.n + 1) for r in range(1, grid.n + 1))
+
+        def helper(grid: Grid, clues, iterations=100):
+            """Fills in one word. TODO: set to list cast is slow!"""
+            # TODO: memoize get_across(), get_down() after layout is set
+            if not clues:
+                return grid
+            length, direction, id = clues[0]
+            if direction == 'across':
+                to_fill = grid.across[id].get_across()
+            if direction == 'down':
+                to_fill = grid.down[id].get_down()
+            constraints = [(i, to_fill[i].label) for i in range(length) if not to_fill[i].is_blank()]
+            if constraints:
+                candidates = list(intersection([clue_processor.words[length][x] for x in constraints]))
+            else:
+                candidates = list(clue_processor.words[length]['all'])
+            print(direction, id, candidates)
+            if candidates:
+                for k in range(min(iterations, len(candidates))):
+                    if iterations < len(candidates):
+                        word = candidates[random.randint(0, len(candidates) - 1)]
+                    else:
+                        word = candidates[k]
+                    for i in range(length):
+                        to_fill[i].label = word[i]
+                    helper(grid.copy(), clues[1:])
+        
+        while True:
+            g = helper(self.copy(), self.clues)
+            if filled(g):
+                return g
+
+    def copy(self):
+        g = Grid(self.n, set_layout=False)
+        for r in range(1, self.n + 1):
+            for c in range(1, self.n + 1):
+                g.cell(r, c).label = self.cell(r, c).label
+        g.across, g.down, g.clues = self.across, self.down, self.clues
+        return g
+
     def __str__(self):
-        s = ''
-        for i in range(1, self.n + 1):
-            for j in range(1, self.n + 1):
-                s += self.get_cell(i, j).label + ' '
-            s += '\n'
-        return s
+        return '\n'.join(' '.join(self.cell(i, j).label \
+            for j in range(1, self.n + 1)) for i in range(1, self.n + 1))
 
-
-    # len_remaining_words: int
-
-    # def __init__(self, squares=(), buckets=None) -> None:
-    #     if (squares == None):
-    #         raise ValueError('Grid must not be None')
-    #     if (len(squares) > 0 and len(squares) != len(squares[0])):
-    #         raise ValueError('Grid must be square')
-
-    #     self.squares = squares
-    #     self.n = len(squares)
-
-    #     self.remaining_words = PriorityQueue()
-    #     words, contains_words = extract_words(self.squares)
-    #     for coords, x in contains_words.items():
-    #         for direction, id in x.items():
-    #             word = words[direction][id]
-    #             if '.' in word:
-    #                 self.remaining_words.put(
-    #                     Entry(grid=self, word=word, r=coords[0], c=coords[1], direction=direction))
-
-    #     self.len_remaining_words = self.remaining_words.qsize()
-    #     self.buckets = buckets
-
-    # def __str__(self) -> str:
-    #     return grid_to_string(self.squares)
-
-    # def off_or_black(self, r, c):
-    #     return r < 0 or r >= self.n or c < 0 or c >= self.n or self.squares[r][c] == '#'
-
-    # def generate_blank(self):
-    #     """Returns a grid, subject to some requirements.
-
-    #     Currently requirements are somewhat contrived and may not be realistic,
-    #     depending on word generation. Eventually they will be replaced with
-    #     superior functions based on expected value.
-
-    #     Args:
-    #         n (int): grid size
-
-    #     Returns:
-    #         str: selected grid
-    #     """
-
-    #     def words_addition(grid, r, c):
-    #         return 2 - (self.off_or_black(grid, r+1, c) or self.off_or_black(grid, r-1, c)) \
-    #             - (self.off_or_black(grid, r, c+1)
-    #                or self.off_or_black(grid, r, c-1))
-
-    #     MAX_BLACK = round(0.15*self.n*self.n+0.5*self.n-3.5)
-    #     MIN_BLACK = MAX_BLACK//2
-    #     NUM_BLACK = random.randint(MIN_BLACK, MAX_BLACK)
-    #     MAX_WORDS = round(0.35*self.n*self.n-0.3*self.n+3)
-    #     MIN_WORD_LENGTH = 3
-
-    #     black = 0
-    #     words = 2*self.n
-    #     grid = [['.' for j in range(self.n)] for i in range(self.n)]
-    #     available = [(i, j) for i in range(self.n) for j in range(self.n)]
-    #     dr = [1, 0, -1, 0]
-    #     dc = [0, 1, 0, -1]
-
-    #     while black < NUM_BLACK and words <= MAX_WORDS:
-    #         (r, c) = available[random.randint(0, len(available)-1)]
-    #         valid = True
-    #         for dir in range(4):
-    #             within_len = [self.off_or_black(grid, r+dist*dr[dir], c+dist*dc[dir])
-    #                           for dist in range(1, MIN_WORD_LENGTH+1)]
-    #             if not(within_len[0]) and not(all(v == False for v in within_len)):
-    #                 valid = False
-    #         if valid:
-    #             available.remove((r, c))
-    #             if self.n < 11:
-    #                 grid[r][c] = '#'
-    #                 black += 1
-    #                 words += words_addition(grid, r, c)
-    #             else:
-    #                 if self.n % 2 == 1 and r == self.n//2 and c == self.n//2:
-    #                     grid[r][c] = '#'
-    #                     black += 1
-    #                     words += words_addition(grid, r, c)
-    #                 else:
-    #                     available.remove((self.n-1-r, self.n-1-c))
-    #                     grid[r][c], grid[self.n-1-r][self.n-1-c] = '#', '#'
-    #                     black += 2
-    #                     words += words_addition(grid, r, c) + \
-    #                         words_addition(grid, self.n-1-r, self.n-1-c)
-
-    #     return grid
 
     # def valid(self, debug=False) -> bool:
-    #     """Checks if grid has a valid solution
-
-    #     Returns:
-    #         bool: True if the grid has a valid solution, False else
-    #     """
     #     words = extract_words(self.squares)[0]
     #     # print(words)
     #     for direction, more_info in words.items():
@@ -187,15 +170,6 @@ class Grid:
 
     # def fill(self, entry):
     #     """Fills the grid with one word
-
-    #     Args:
-    #         entry (Entry): An Entry describing the word to be filled
-
-    #     Raises:
-    #         ValueError: Raises if self conflicts with entry.grid; see comment below 
-
-    #     Returns:
-    #         Grid: Grid with filled entry
     #     """
 
     #     if self != entry.grid:
@@ -215,9 +189,6 @@ class Grid:
 
     # def possible_next_grids(self):
     #     """Generates possible grids after filling in one word
-
-    #     Returns:
-    #         generator[Grid]: A generator containing the first k possible grids
     #     """
     #     cur_entry = self.remaining_words.get()
 
@@ -233,9 +204,6 @@ class Grid:
 
     # def solve(self):
     #     """Solves the grid
-
-    #     Returns:
-    #         Grid: Solved grid, None if no solution
     #     """
     #     # debug
     #     cnt = 0

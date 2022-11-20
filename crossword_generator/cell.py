@@ -1,6 +1,7 @@
-from .direction import Direction
+from crossword_generator.direction import Direction
 
 class Cell:
+    # WARNING: Cell.BLANK and Cell.WALL are NOT Cells!
     BLANK = "."
     WALL = "#"
 
@@ -13,7 +14,7 @@ class Cell:
 
     def set_neighbors(self):
         for dir in Direction:
-            self.neighbors[dir] = self.grid.get_cell(self.row + dir.value.r, self.col + dir.value.c)
+            self.neighbors[dir] = self.grid.cell(self.row + dir.value.r, self.col + dir.value.c)
 
     def is_blank(self):
         return self.label == Cell.BLANK
@@ -47,3 +48,4 @@ class Cell:
 
     def __repr__(self):
         return f'Cell({self.row}, {self.col})'
+        
