@@ -22,11 +22,8 @@ class Cell:
     def is_wall(self):
         return self.label == Cell.WALL
 
-    def set_label(self, label):
-        self.label = label
-
     def make_wall(self):
-        self.set_label(Cell.WALL)
+        self.label = Cell.WALL
     
     def get_across(self):
         """`Across` array of Cells containing self"""

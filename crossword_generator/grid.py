@@ -108,38 +108,33 @@ class Grid:
             return sets[0].intersection(*sets[1:])
 
         def filled(grid: Grid):
-            return grid and all(not (grid.cell(r, c).is_blank()) \
+            return all(not (grid.cell(r, c).is_blank()) \
                 for c in range(1, grid.n + 1) for r in range(1, grid.n + 1))
 
-        def helper(grid: Grid, clues, iterations=100):
+        def helper(grid: Grid, clues: list, iterations=2):
             """Fills in one word. TODO: set to list cast is slow!"""
             # TODO: memoize get_across(), get_down() after layout is set
+            print(grid)
             if not clues:
                 return grid
             length, direction, id = clues[0]
-            if direction == 'across':
-                to_fill = grid.across[id].get_across()
-            if direction == 'down':
-                to_fill = grid.down[id].get_down()
+            to_fill = grid.across[id].get_across() if direction == 'across' else grid.down[id].get_down()
             constraints = [(i, to_fill[i].label) for i in range(length) if not to_fill[i].is_blank()]
             if constraints:
                 candidates = list(intersection([clue_processor.words[length][x] for x in constraints]))
             else:
                 candidates = list(clue_processor.words[length]['all'])
-            print(direction, id, candidates)
             if candidates:
-                for k in range(min(iterations, len(candidates))):
-                    if iterations < len(candidates):
-                        word = candidates[random.randint(0, len(candidates) - 1)]
-                    else:
-                        word = candidates[k]
+                print(direction, id, candidates, clues)
+                words = random.sample(candidates, min(iterations, len(candidates)))
+                for word in words:
                     for i in range(length):
                         to_fill[i].label = word[i]
                     helper(grid.copy(), clues[1:])
         
         while True:
             g = helper(self.copy(), self.clues)
-            if filled(g):
+            if g and filled(g):
                 return g
 
     def copy(self):
