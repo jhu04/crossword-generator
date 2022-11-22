@@ -14,6 +14,7 @@ def test_grid(verbose=True):
 
 def test_clues(verbose=True):
     clue_processor = ClueProcessor('crossword_generator/data/clues.csv')
+    print('Done processing clues')
     if verbose:
         print(clue_processor.words[3])
     return clue_processor
@@ -22,4 +23,3 @@ if __name__ == '__main__':
     g = test_grid(verbose=False)
     clue_processor = test_clues(verbose=False)
     g.fill(clue_processor)
-    print(g)
