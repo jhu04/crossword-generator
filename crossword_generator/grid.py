@@ -118,7 +118,7 @@ class Grid:
                     id += 1
         self.entries.sort(key=lambda e: -e.length)
 
-    def fill(self, clue_processor: ClueProcessor, iterations=10, verbose=True):
+    def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_test_strings=10, verbose=True):
         """
         Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
         
@@ -137,7 +137,7 @@ class Grid:
 
         res = None
 
-        def helper(grid: Grid, entries: list, iterations=100):
+        def helper(grid: Grid, entries: list):
             """Fills in one word at a time, proceeding by DFS. TODO: set to list cast is slow!"""
             # TODO: memoize get_across(), get_down() after layout is set
             
@@ -160,8 +160,8 @@ class Grid:
             candidates = get_candidates(entry)
             if candidates:
                 if verbose:
-                    print(entry, candidates[:iterations], entries)
-                words = random.sample(candidates, min(iterations, len(candidates)))
+                    print(entry, candidates[:num_test_strings], entries)
+                words = random.sample(candidates, min(num_test_strings, len(candidates)))
                 for word in words:
                     orthogonal_conflict = False
                     for i in range(entry.length):
@@ -173,7 +173,7 @@ class Grid:
                     if not orthogonal_conflict:
                         helper(grid.copy(), entries[1:])
         
-        for _ in range(iterations):
+        for _ in range(num_attempts):
             helper(self.copy(), self.entries)
             if res and filled(res):
                 return res
