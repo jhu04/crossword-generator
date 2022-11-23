@@ -61,9 +61,9 @@ class Grid:
         
         # TODO: make cleaner bounds
         MAX_WALL = int(0.17 * self.n**2 + 0.066 * self.n - 1.1)
-        MAX_WORDS = int(0.35 * self.n**2 - 0.3 * self.n + 3)
+        MAX_WORDS = int(0.34 * self.n**2 - 0.3 * self.n + 4)
         MIN_WORD_LENGTH = 3
-        SYMMETRY_CUTOFF = 11
+        SYMMETRIC_SIZES = [6, 7, 11, 12, 13, 14, 15]
 
         curr_wall = 0
         curr_words = 2 * self.n
@@ -81,7 +81,7 @@ class Grid:
             available_cells.remove((r, c))
 
         illegal_cells = []
-        if self.n >= SYMMETRY_CUTOFF and self.n % 2 == 1:
+        if self.n in SYMMETRIC_SIZES and self.n % 2 == 1:
             for i in range(int(-(MIN_WORD_LENGTH + 1) / 2), int((MIN_WORD_LENGTH + 1) / 2)):
                 illegal_cells.append((i + (self.n + 1) / 2, (self.n + 1) / 2))
                 illegal_cells.append(((self.n + 1) / 2, i + (self.n + 1) / 2))
@@ -92,7 +92,7 @@ class Grid:
                 or len(self.cell(r, c).in_direction(dir)) > MIN_WORD_LENGTH for dir in Cardinal):
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
-                    if self.n >= SYMMETRY_CUTOFF:
+                    if self.n in SYMMETRIC_SIZES:
                         add_wall(self.n + 1 - r, self.n + 1 - c)
 
     def number_cells(self):
@@ -118,12 +118,16 @@ class Grid:
                     id += 1
         self.entries.sort(key=lambda e: -e.length)
 
-    def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_test_strings=10, verbose=True):
+    def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_test_strings=10, verbosity=0):
         """
         Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
         
         *We actually want words to be entered in order of the number of blank cells. However,
         this is pretty annoying (and probably slow) to implement.
+
+        num_attemps      = number of times grid tries filling from scratch
+        num_test_strings = number of strings grid tests per entry
+        verbosity        = proportion of the time things will print
         """
 
         def intersection(sets):
@@ -136,6 +140,7 @@ class Grid:
                 for c in range(1, grid.n + 1) for r in range(1, grid.n + 1))
 
         res = None
+        counter, print_every = 0, int(1/verbosity) if verbosity else 0
 
         def helper(grid: Grid, entries: list):
             """Fills in one word at a time, proceeding by DFS. TODO: set to list cast is slow!"""
@@ -147,20 +152,22 @@ class Grid:
                 return list(intersection([clue_processor.words[entry.length][x] for x in constraints])) \
                     if constraints else list(clue_processor.words[entry.length]['all'])
 
-            nonlocal res
+            nonlocal res, counter
             if res:
                 return
-            if verbose:
+            counter += 1
+            if verbosity and counter % print_every == 0:
                 print(grid, '\n')
             entries = [Entry(grid, [grid.cell(p.row, p.col)
                 for p in entry.positions()]) for entry in entries]
             if not entries:
                 res = grid
+                return
             entry = entries[0]
             candidates = get_candidates(entry)
             if candidates:
-                if verbose:
-                    print(entry, candidates[:num_test_strings], entries)
+                # if verbose:
+                #     print(entry, candidates[:num_test_strings], entries)
                 words = random.sample(candidates, min(num_test_strings, len(candidates)))
                 for word in words:
                     orthogonal_conflict = False
@@ -176,7 +183,8 @@ class Grid:
         for _ in range(num_attempts):
             helper(self.copy(), self.entries)
             if res and filled(res):
-                return res
+                self.__dict__.update(res.__dict__)
+                return
 
     def copy(self):
         g = Grid(self.n, set_layout=False)
@@ -189,87 +197,6 @@ class Grid:
     def __str__(self):
         return '\n'.join(' '.join(self.cell(i, j).label \
             for j in range(1, self.n + 1)) for i in range(1, self.n + 1))
-
-
-    # def valid(self, debug=False) -> bool:
-    #     words = extract_words(self.squares)[0]
-    #     # print(words)
-    #     for direction, more_info in words.items():
-    #         for id, word in more_info.items():
-    #             if debug:
-    #                 print("WORD: " + word)
-    #                 print("POSSIBLE WORDS: " +
-    #                       str(possible_words(word=word, buckets=self.buckets)))
-    #             if possible_words(word=word, buckets=self.buckets) == set():
-    #                 return False
-    #     return True
-
-    # def fill(self, entry):
-    #     """Fills the grid with one word
-    #     """
-
-    #     if self != entry.grid:
-    #         # techinically self is unnecessary, but this check is likely good to make sure the right grid is modified
-    #         raise ValueError('Self should be equal to entry.grid')
-
-    #     res_squares = [list(x) for x in self.squares]
-    #     for i in range(len(entry.word)):
-    #         if entry.direction == 'across':
-    #             res_squares[entry.r][entry.c + i] = entry.word[i]
-    #         else:
-    #             res_squares[entry.r + i][entry.c] = entry.word[i]
-    #     res_squares = tuple(tuple(x) for x in res_squares)
-
-    #     res = Grid(res_squares, self.buckets)
-    #     return res
-
-    # def possible_next_grids(self):
-    #     """Generates possible grids after filling in one word
-    #     """
-    #     cur_entry = self.remaining_words.get()
-
-    #     possible = possible_words(word=cur_entry.word, buckets=self.buckets)
-
-    #     k = 100
-    #     res = (self.fill(Entry(grid=cur_entry.grid, word=x, r=cur_entry.r, c=cur_entry.c,
-    #            direction=cur_entry.direction)) for x in random.sample(possible, min(k, len(possible))))
-    #     # for x in res:
-    #     #     print(x)cls
-
-    #     return res
-
-    # def solve(self):
-    #     """Solves the grid
-    #     """
-    #     # debug
-    #     cnt = 0
-
-    #     pq = PriorityQueue()
-
-    #     pq.put(self)
-
-    #     while not pq.empty():
-    #         p = pq.get()
-
-    #         # print("ORIGINAL GRID:")
-    #         # print(p)
-
-    #         if not p.valid():
-    #             continue
-
-    #         if p.len_remaining_words == 0:
-    #             return p
-
-    #         cnt += 1
-    #         if cnt % 10 == 0:
-    #             print(f'{cnt} valid grids processed, current grid:\n' + str(p))
-
-    #         # print("NEXT GRIDS:")
-    #         for p_next in p.possible_next_grids():
-    #             pq.put(p_next)
-    #             # print(p_next)
-
-    #     return None
 
 
 class Cell:
