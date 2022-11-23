@@ -23,7 +23,7 @@ class Grid:
         
         self.across = {}
         self.down = {}
-        self.clues = []
+        self.entries = []
         if set_layout:
             self.generate_layout()
             self.number_cells()
@@ -85,16 +85,16 @@ class Grid:
                 if self.cell(r, c).neighbors[Direction.WEST].is_wall():
                     is_clue = True
                     self.across[id] = self.cell(r, c)
-                    self.clues.append((len(self.cell(r, c).get_across()), 'across', id))
+                    self.entries.append((len(self.cell(r, c).get_across()), 'across', id))
                 if self.cell(r, c).neighbors[Direction.NORTH].is_wall():
                     is_clue = True
                     self.down[id] = self.cell(r, c)
-                    self.clues.append((len(self.cell(r, c).get_down()), 'down', id))
+                    self.entries.append((len(self.cell(r, c).get_down()), 'down', id))
                 if is_clue:
                     id += 1
-        self.clues.sort(key=lambda x:-x[0])
+        self.entries.sort(key=lambda x:-x[0])
 
-    def fill(self, clue_processor: ClueProcessor):
+    def fill(self, clue_processor: ClueProcessor, iterations=10):
         """
         Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
         
@@ -111,10 +111,10 @@ class Grid:
             return all(not (grid.cell(r, c).is_blank()) \
                 for c in range(1, grid.n + 1) for r in range(1, grid.n + 1))
 
-        def helper(grid: Grid, clues: list, iterations=2):
+        def helper(grid: Grid, clues: list, iterations=10):
             """Fills in one word. TODO: set to list cast is slow!"""
             # TODO: memoize get_across(), get_down() after layout is set
-            print(grid)
+            print(grid, '\n')
             if not clues:
                 return grid
             length, direction, id = clues[0]
@@ -125,15 +125,15 @@ class Grid:
             else:
                 candidates = list(clue_processor.words[length]['all'])
             if candidates:
-                print(direction, id, candidates, clues)
+                print(direction, id, candidates[:iterations], clues)
                 words = random.sample(candidates, min(iterations, len(candidates)))
                 for word in words:
                     for i in range(length):
                         to_fill[i].label = word[i]
                     helper(grid.copy(), clues[1:])
         
-        while True:
-            g = helper(self.copy(), self.clues)
+        for _ in range(iterations):
+            g = helper(self.copy(), self.entries)
             if g and filled(g):
                 return g
 
@@ -142,7 +142,13 @@ class Grid:
         for r in range(1, self.n + 1):
             for c in range(1, self.n + 1):
                 g.cell(r, c).label = self.cell(r, c).label
-        g.across, g.down, g.clues = self.across, self.down, self.clues
+        for id in self.across:
+            r, c = self.across[id].row, self.across[id].col
+            g.across[id] = g.cell(r, c)
+        for id in self.down:
+            r, c = self.down[id].row, self.down[id].col
+            g.down[id] = g.cell(r, c)
+        g.entries = self.entries.copy()
         return g
 
     def __str__(self):
