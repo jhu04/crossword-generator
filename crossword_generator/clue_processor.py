@@ -3,7 +3,7 @@ import pandas as pd
 class ClueProcessor:
     """
     Processes clue data from a csv.
-        clues: DataFrame storing clues and answers
+        clues: DataFrame storing clues and answers.
         words: Dictionary mapping lengths to dictionaries, which map (pos, char) pairs to lists.
 
     TODO: currently only processes words for which there exists an associated
