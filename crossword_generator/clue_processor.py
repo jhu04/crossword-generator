@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class ClueProcessor:
     """
     Processes clue data from a csv.
@@ -13,12 +14,12 @@ class ClueProcessor:
     def __init__(self, path):
         clues = pd.read_csv(path)
         clues = clues[['clue', 'answer']]
-        clues['clue'] = clues['clue'].astype(str).apply(lambda s : s.split("(")[0].strip())
+        clues['clue'] = clues['clue'].astype(str).apply(lambda s: s.split("(")[0].strip())
         clues['answer'] = clues['answer'].astype(str).apply(
-            lambda s : s.replace(" ", "").replace("-", "").strip().upper())
+            lambda s: s.replace(" ", "").replace("-", "").strip().upper())
         clues = clues[clues['answer'].str.contains(r'^[A-Z]*$')]
-        clues['len'] = clues['answer'].apply(lambda s : len(s))
-        clues = clues[(clues['len']>=3) & (clues['len']<=15)]
+        clues['len'] = clues['answer'].apply(lambda s: len(s))
+        clues = clues[(clues['len'] >= 3) & (clues['len'] <= 15)]
 
         words = {i: {} for i in range(3, 16)}
         for i in range(3, 16):
@@ -33,4 +34,3 @@ class ClueProcessor:
 
         self.clues = clues
         self.words = words
-        
