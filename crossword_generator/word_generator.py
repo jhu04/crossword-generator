@@ -1,3 +1,6 @@
+# THIS FILE IS ARCHIVED. THE WORDLIST FILE (../data/wordlist.txt) CAN BE FOUND AT
+# https://crosswordnexus.com/downloads/wordlist.txt; REMOVE WORDS WITH NUMBERS TO OBTAIN THE FILE.
+
 from cachetools.keys import hashkey
 from cachetools import cached
 
