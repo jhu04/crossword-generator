@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, auto
 import random
 from typing import ClassVar
 
@@ -28,10 +28,8 @@ class Cardinal(Enum):
 
 
 class Direction(Enum):
-    ACROSS = 'across'
-    DOWN = 'down'
-
-    value: str
+    ACROSS = auto()
+    DOWN = auto()
 
     def opposite(self):
         return Direction.DOWN if self is Direction.ACROSS else Direction.ACROSS
@@ -47,7 +45,6 @@ class Grid:
     """1-indexed N x N grid of Cells"""
 
     def __init__(self, n, set_layout=True):
-        assert 4 <= n <= 15
         self.n = n
         self.grid = tuple(tuple(Cell(self, r, c) for c in range(n + 2)) for r in range(n + 2))
         for i in range(self.n + 2):
@@ -55,9 +52,6 @@ class Grid:
             self.grid[i][self.n + 1].make_wall()
             self.grid[0][i].make_wall()
             self.grid[self.n + 1][i].make_wall()
-        for i in range(self.n + 2):
-            for j in range(self.n + 2):
-                self.cell(i, j).set_neighbors()
 
         self.across = {}
         self.down = {}
@@ -85,10 +79,19 @@ class Grid:
 
         curr_wall = 0
         curr_words = 2 * self.n
-        available_cells = [(i, j) for i in range(1, self.n + 1) for j in range(1, self.n + 1)] # TODO: optimize to use set instead of list
+        available_cells = [(i, j) for i in range(1, self.n + 1) for j in
+                           range(1, self.n + 1)]  # TODO: optimize to use set instead of list
 
-        def added_words(r, c) -> int:
-            """Incremented number of words by adding a wall at (r, c)"""
+        def num_added_words(r: int, c: int) -> int:
+            """Returns the number of additional words that would be obtained by adding a wall at (r, c).
+
+            Args:
+                r: The row.
+                c: The column.
+
+            Returns:
+                The number of additional words that would be obtained by adding a wall at (r, c).
+            """
             return 2 - sum(
                 self.grid[r + direction.value.row][c + direction.value.col].is_wall() for direction in Cardinal)
 
@@ -96,7 +99,7 @@ class Grid:
             nonlocal curr_wall, curr_words
             self.cell(r, c).make_wall()
             curr_wall += 1
-            curr_words += added_words(r, c)
+            curr_words += num_added_words(r, c)
             available_cells.remove((r, c))
 
         illegal_cells = []
@@ -107,7 +110,7 @@ class Grid:
 
         while curr_wall < MAX_WALL and curr_words < MAX_WORDS:
             r, c = available_cells[random.randint(0, len(available_cells) - 1)]
-            if all(self.cell(r, c).neighbors[dir].is_wall()
+            if all(self.cell(r, c).get_neighbor(dir).is_wall()
                    or len(self.cell(r, c).in_direction(dir)) > MIN_WORD_LENGTH for dir in Cardinal):
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
@@ -123,12 +126,12 @@ class Grid:
                 if self.cell(r, c).is_wall():
                     continue
                 is_entry = False
-                if self.cell(r, c).neighbors[Cardinal.WEST].is_wall():
+                if self.cell(r, c).get_neighbor(Cardinal.WEST).is_wall():
                     is_entry = True
                     self.across[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
                     self.entries.append(Entry(self, self.cell(r, c).get_across()))
-                if self.cell(r, c).neighbors[Cardinal.NORTH].is_wall():
+                if self.cell(r, c).get_neighbor(Cardinal.NORTH).is_wall():
                     is_entry = True
                     self.down[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
@@ -140,7 +143,8 @@ class Grid:
     def is_filled(self) -> bool:
         return all(not (self.cell(r, c).is_blank()) for c in range(1, self.n + 1) for r in range(1, self.n + 1))
 
-    def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_test_strings=10, verbosity=0) -> None:
+    def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_sample_strings=20, num_test_strings=10,
+             verbosity=0) -> None:
         """Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
 
         *We actually want words to be entered in order of the number of blank cells. However,
@@ -149,6 +153,7 @@ class Grid:
         Args:
             clue_processor: The clue processor.
             num_attempts: Number of times grid tries filling from scratch.
+            num_sample_strings: Number of strings to sample per entry. A subset of this sample will be taken for testing.
             num_test_strings: Number of strings grid tests per entry.
             verbosity: Proportion of the time things will print.
 
@@ -157,7 +162,8 @@ class Grid:
         """
 
         res: Grid | None = None
-        counter, print_every = 0, int(1 / verbosity) if verbosity else 0
+        counter = 0
+        print_every = int(1 / verbosity) if verbosity else 0
 
         def get_candidates(entry: Entry) -> tuple[str, ...]:
             """Returns a tuple of all possible words that fit the constraints of the entry.
@@ -171,51 +177,94 @@ class Grid:
             constraints = tuple(
                 (i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
             return tuple(
-                intersection(tuple(clue_processor.words[entry.length][constraint] for constraint in constraints)) \
-                    if constraints else clue_processor.words[entry.length]['all'])
+                intersection(tuple(clue_processor.words[entry.length][constraint] for constraint in constraints))
+                if constraints else clue_processor.words[entry.length]['all']
+            )
 
         def helper(grid: Grid, entries: tuple[Entry, ...] | list[Entry, ...]) -> None:
             """Fills in one word at a time, proceeding by DFS. TODO: set to list cast is slow!"""
 
             # TODO: memoize get_across(), get_down() after layout is set
 
-            nonlocal res, counter
-            if res:
+            nonlocal res
+            if res:  # if solution already exists
                 return
 
             # verbose information
+            nonlocal counter
             counter += 1
             if verbosity and counter % print_every == 0:
-                print(grid, '\n')
+                print(grid)
+                print()
 
-            # copy entries to match new grid
-            entries = tuple(Entry(grid, [grid.cell(p.row, p.col) for p in entry.positions()]) for entry in entries)
-            if not entries:
-                res = grid
+            if not entries:  # if all entries have been previously processed
+                res = grid.copy()
                 return
 
-            # process next entry and dfs
+            # process word candidates for next entry
             entry = entries[0]
             candidates = get_candidates(entry)
-            if candidates:
+            words = random.sample(candidates, min(num_test_strings, len(candidates)))
+
+            # dfs
+            for word in words:
+                orthogonal_conflict = False
+
+                previously_blank_cells = []
+
+                for i in range(entry.length):
+                    # fill word
+                    if entry.cells[i].label == Cell.BLANK:
+                        previously_blank_cells.append(entry.cells[i])
+                        entry.cells[i].label = word[i]
+
+                    # orthogonal checking
+                    orthogonal = Entry(grid, entry.cells[i].get_entry(entry.direction.opposite()))
+                    if not get_candidates(orthogonal):
+                        orthogonal_conflict = True
+                        break
+
+                if not orthogonal_conflict:
+                    helper(grid, entries[1:])
+
+                # backtrack
+                for cell in previously_blank_cells:
+                    cell.label = Cell.BLANK
+
+            # COMMENTED OUT CODE
+            # process next entry and dfs
+            # entry = entries[0]
+            # candidates = get_candidates(entry)
+            # if candidates:
                 # if verbosity > 0:
                 #     print(entry, candidates[:num_test_strings], entries)
-                words = random.sample(candidates, min(num_test_strings, len(candidates)))
-                for word in words:
-                    orthogonal_conflict = False
 
-                    # fill word
-                    for i in range(entry.length):
-                        entry.cells[i].label = word[i]
-                        orthogonal = Entry(grid, entry.cells[i].get_entry(entry.direction.opposite()))
-                        if not get_candidates(orthogonal):
-                            orthogonal_conflict = True
-                            break
-                    if not orthogonal_conflict:
-                        helper(grid.copy(), entries[1:])
+                # calculate heuristics for each word
+                # heuristic_scores = []
+                # for word in words:
+                #     # TODO: heuristics to test: min(len(get_candidates))
+                #     heuristic_score = 1
+                #
+                #     for i in range(entry.length):
+                #         orthogonal = Entry(grid, entry.cells[i].get_entry(entry.direction.opposite()))
+                #         heuristic_score *= len(get_candidates(orthogonal))
+                #         if heuristic_score == 0:
+                #             break
+                #     heuristic_scores.append((word, heuristic_score))
+                #
+                # for word, heuristic_score in sorted(heuristic_scores, reverse=True)[
+                #                              :num_test_strings]:  # TODO: sample more than num_test_strings words, then only take first x of the words?
+                #     if heuristic_score == 0:
+                #         continue
+                #
+                #     # fill word
+                #     for i in range(entry.length):
+                #         entry.cells[i].label = word[i]
+                #
+                #     helper(grid.copy(), entries[1:])
 
         for _ in range(num_attempts):
-            helper(self.copy(), self.entries)
+            helper(self, self.entries)
             if res and res.is_filled():
                 self.__dict__.update(res.__dict__)
                 return
@@ -242,12 +291,9 @@ class Cell:
     row: int
     col: int
     label: str = BLANK
-    neighbors: dict[Cardinal, Cell] = field(init=False, default_factory=dict)
 
-    def set_neighbors(self) -> None:
-        for cardinal_direction in Cardinal:
-            self.neighbors[cardinal_direction] = self.grid.cell(self.row + cardinal_direction.value.row,
-                                                                self.col + cardinal_direction.value.col)
+    def get_neighbor(self, cardinal_direction: Cardinal) -> Cell:
+        return self.grid.cell(self.row + cardinal_direction.value.row, self.col + cardinal_direction.value.col)
 
     def is_blank(self) -> bool:
         return self.label == Cell.BLANK
@@ -275,7 +321,7 @@ class Cell:
     def get_entry(self, direction: Direction) -> list[Cell, ...]:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
-    def in_direction(self, dir: Cardinal) -> list[Cell, ...]:
+    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell, ...]:
         """Returns a list of cells starting at self (inclusive) until hitting a wall.
 
         Only used internally (for get_across and get_down).
@@ -284,7 +330,7 @@ class Cell:
         cur_cell = self
         while not cur_cell.is_wall():
             res.append(cur_cell)
-            cur_cell = cur_cell.neighbors[dir]
+            cur_cell = cur_cell.get_neighbor(cardinal_direction)
         return res
 
     def __repr__(self):
