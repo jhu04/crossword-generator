@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 import random
+from functools import cache, lru_cache
 from typing import ClassVar
 
 from crossword_generator.clue_processor import ClueProcessor
@@ -33,12 +34,6 @@ class Direction(Enum):
 
     def opposite(self):
         return Direction.DOWN if self is Direction.ACROSS else Direction.ACROSS
-
-
-def intersection(sets: tuple[set, ...]):
-    if len(sets) == 1:
-        return sets[0]
-    return sets[0].intersection(*sets[1:])
 
 
 class Grid:
@@ -165,6 +160,19 @@ class Grid:
         counter = 0
         print_every = int(1 / verbosity) if verbosity else 0
 
+        def intersection(sets: tuple[set, ...]):
+            if len(sets) == 1:
+                return sets[0]
+            return sets[0].intersection(*sets[1:])
+
+        # TODO: make faster
+        @lru_cache(maxsize=None)
+        def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]):
+            return tuple(
+                intersection(tuple(clue_processor.words[length][constraint] for constraint in constraints))
+                if len(constraints) > 0 else clue_processor.words[length]['all']
+            )
+
         def get_candidates(entry: Entry) -> tuple[str, ...]:
             """Returns a tuple of all possible words that fit the constraints of the entry.
 
@@ -174,12 +182,8 @@ class Grid:
             Returns:
                 A tuple of all possible words that fit the constraints of the entry.
             """
-            constraints = tuple(
-                (i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
-            return tuple(
-                intersection(tuple(clue_processor.words[entry.length][constraint] for constraint in constraints))
-                if constraints else clue_processor.words[entry.length]['all']
-            )
+            constraints = tuple((i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
+            return constraints_intersection(entry.length, constraints)
 
         def helper(grid: Grid, entries: tuple[Entry, ...] | list[Entry, ...]) -> None:
             """Fills in one word at a time, proceeding by DFS. TODO: set to list cast is slow!"""
@@ -204,64 +208,50 @@ class Grid:
             # process word candidates for next entry
             entry = entries[0]
             candidates = get_candidates(entry)
-            words = random.sample(candidates, min(num_test_strings, len(candidates)))
+            words = random.sample(candidates, min(num_sample_strings, len(candidates)))
 
-            # dfs
+            # calculate heuristics for each word
+            heuristic_scores: list[tuple[int, str]] = []
+
+            # compute heuristics
             for word in words:
-                orthogonal_conflict = False
-
                 previously_blank_cells = []
+                heuristic_score = 1
 
                 for i in range(entry.length):
-                    # fill word
+                    # fill cell
                     if entry.cells[i].label == Cell.BLANK:
                         previously_blank_cells.append(entry.cells[i])
                         entry.cells[i].label = word[i]
 
-                    # orthogonal checking
-                    orthogonal = Entry(grid, entry.cells[i].get_entry(entry.direction.opposite()))
-                    if not get_candidates(orthogonal):
-                        orthogonal_conflict = True
+                    # calculate heuristic score
+                    orthogonal = Entry(grid, entry.cells[i].get_entry_list(entry.direction.opposite()))
+                    heuristic_score *= len(get_candidates(orthogonal))
+                    if heuristic_score == 0:  # optimization
                         break
 
-                if not orthogonal_conflict:
-                    helper(grid, entries[1:])
+                if heuristic_score != 0:
+                    heuristic_scores.append((heuristic_score, word))
 
                 # backtrack
                 for cell in previously_blank_cells:
                     cell.label = Cell.BLANK
 
-            # COMMENTED OUT CODE
-            # process next entry and dfs
-            # entry = entries[0]
-            # candidates = get_candidates(entry)
-            # if candidates:
-                # if verbosity > 0:
-                #     print(entry, candidates[:num_test_strings], entries)
+            # dfs
+            for heuristic_score, word in sorted(heuristic_scores, reverse=True)[:num_test_strings]:
+                previously_blank_cells = []
 
-                # calculate heuristics for each word
-                # heuristic_scores = []
-                # for word in words:
-                #     # TODO: heuristics to test: min(len(get_candidates))
-                #     heuristic_score = 1
-                #
-                #     for i in range(entry.length):
-                #         orthogonal = Entry(grid, entry.cells[i].get_entry(entry.direction.opposite()))
-                #         heuristic_score *= len(get_candidates(orthogonal))
-                #         if heuristic_score == 0:
-                #             break
-                #     heuristic_scores.append((word, heuristic_score))
-                #
-                # for word, heuristic_score in sorted(heuristic_scores, reverse=True)[
-                #                              :num_test_strings]:  # TODO: sample more than num_test_strings words, then only take first x of the words?
-                #     if heuristic_score == 0:
-                #         continue
-                #
-                #     # fill word
-                #     for i in range(entry.length):
-                #         entry.cells[i].label = word[i]
-                #
-                #     helper(grid.copy(), entries[1:])
+                # fill word
+                for i in range(entry.length):
+                    if entry.cells[i].label == Cell.BLANK:
+                        previously_blank_cells.append(entry.cells[i])
+                        entry.cells[i].label = word[i]
+
+                helper(grid, entries[1:])
+
+                # backtrack
+                for cell in previously_blank_cells:
+                    cell.label = Cell.BLANK
 
         for _ in range(num_attempts):
             helper(self, self.entries)
@@ -281,7 +271,9 @@ class Grid:
         return '\n'.join(' '.join(self.cell(i, j).label for j in range(1, self.n + 1)) for i in range(1, self.n + 1))
 
 
-@dataclass()
+# TODO: eq is set to False to allow hashing of Cell and thus allow get_entry_list to be cached. Refactor to not have to
+#  set eq to False
+@dataclass(eq=False)
 class Cell:
     # WARNING: Cell.BLANK and Cell.WALL are NOT Cells!
     BLANK: ClassVar[str] = "."
@@ -291,6 +283,9 @@ class Cell:
     row: int
     col: int
     label: str = BLANK
+
+    def __post_init__(self):
+        self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)  # allow memoization without memory leaks
 
     def get_neighbor(self, cardinal_direction: Cardinal) -> Cell:
         return self.grid.cell(self.row + cardinal_direction.value.row, self.col + cardinal_direction.value.col)
@@ -318,7 +313,7 @@ class Cell:
         res.extend(self.in_direction(Cardinal.SOUTH)[1:])  # cells in down direction
         return res
 
-    def get_entry(self, direction: Direction) -> list[Cell, ...]:
+    def get_entry_list(self, direction: Direction) -> list[Cell, ...]:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
     def in_direction(self, cardinal_direction: Cardinal) -> list[Cell, ...]:

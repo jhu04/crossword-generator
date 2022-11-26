@@ -38,10 +38,10 @@ def main():
             print(f'Processing grid {i}')
 
             # test layout generation
-            g = test_grid_layout_generation(7, verbose=False)
+            g = test_grid_layout_generation(11, verbose=False)
 
             # test fill
-            g.fill(clue_processor, num_attempts=10, num_sample_strings=10, num_test_strings=10, verbosity=0.01)
+            g.fill(clue_processor, num_attempts=10, num_sample_strings=1000, num_test_strings=10, verbosity=0.005)
 
             print(f'Processed grid {i}')
             print('Final grid:')
