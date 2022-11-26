@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import './index.css'
 import { Header } from 'components/Header/Header';
-import { Home } from 'pages/Home/Home';
+import Home from 'pages/Home/Home';
 import { Puzzle } from 'pages/Puzzle/Puzzle';
 import { NotFound } from 'pages/NotFound/NotFound';
 
