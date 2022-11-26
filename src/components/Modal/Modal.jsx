@@ -41,12 +41,12 @@ class StartContent extends React.Component {
     return (
       <div>
         <div>
-          Ready to get started?
+          Ready to get solving?
         </div>
         <div>
           <button className={css.button} onClick={this.props.closeModal}>
             <div className={css.buttonBody}>
-              Ok
+              Play
             </div>
           </button>
         </div>
@@ -62,7 +62,7 @@ class IncorrectContent extends React.Component {
         <CloseX />
         <header className={css.almost}>Almost there!</header>
         <div>
-          You’ve filled the puzzle but have at least one error. Keep trying.
+          You’ve filled the puzzle but have at least one error. Keep going!
         </div>
         <button className={css.button}>
           <div className={css.buttonBody}>
@@ -82,7 +82,7 @@ class DoneContent extends React.Component {
         <div className={css.puzzleIcon} />
         <h2 className={css.congratulations}>Congratulations!</h2>
         <div>
-          You solved a <strong>Sunday</strong> puzzle in <strong>{this.props.timer} seconds.</strong>
+          You solved this puzzle in <strong>{this.props.timer} seconds.</strong>
         </div>
       </div>
     )

@@ -68,7 +68,6 @@
 }
 
 .buttonBody {
-  box-shadow: 0 4px 0 0 #2860d8;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,7 +75,7 @@
   font-size: 13px;
   line-height: 16.9px;
   font-weight: 700;
-  background-color: #4f85e5;
+  background-color: black;
   border: none;
   border-radius: 37px;
   color: #fff;
@@ -84,7 +83,6 @@
   min-height: 34px;
   padding: 0 1.5em;
   margin-bottom: 4px;
-  text-transform: uppercase;
 }
 
 .buttonBody:active {

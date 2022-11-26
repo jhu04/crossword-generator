@@ -7,7 +7,7 @@ import { createStore, applyMiddleware } from 'redux';
 import { reducers, rootSaga } from 'reducers';
 import createSagaMiddleware from 'redux-saga';
 
-import { App } from 'app';
+import App from 'app';
 
 
 const sagaMiddleware = createSagaMiddleware();
@@ -17,22 +17,18 @@ const store = createStore(
 );
 sagaMiddleware.run(rootSaga);
 
-const render = () => {
-  ReactDOM.render(
-    <AppContainer>
-      <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Provider>
-    </AppContainer>,
-    document.getElementById('root'),
-  );
-};
-
 if (module.hot) {
   module.hot.accept('app', render);
   module.hot.accept('reducers', () => store.replaceReducer(reducers));
 }
 
-render();
+ReactDOM.render(
+  <AppContainer>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
+  </AppContainer>,
+  document.getElementById('root'),
+);
