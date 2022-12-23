@@ -1,0 +1,894 @@
+[
+  {
+    "puzzle_id":12628,
+    "promo_id":null,
+    "version":3,
+    "puzzle_meta":{
+      "formatType":"Normal",
+      "publishType":"Daily",
+      "title":"Oscar Farewell",
+      "printDate":"2017-10-19",
+      "printDotw":0,
+      "editor":"Guido Rainuzzo",
+      "height":17,
+      "width":17,
+      "author":"Guido Rainuzzo"
+    },
+    "print_date":"2017-10-19",
+    "enhanced_tier_date":null,
+    "puzzle_data":{
+      "clues":{
+        "A":[
+          {
+            "clueStart": 0,
+            "clueNum": 1,
+            "clueEnd": 3,
+            "value": "Multiple of LII"
+          },
+          {
+            "clueStart": 5,
+            "clueNum": 5,
+            "clueEnd": 10,
+            "value": "Alaskan brown bears"
+          },
+          {
+            "clueStart": 13,
+            "clueNum": 11,
+            "clueEnd": 16,
+            "value": "1/2 fluid oz."
+          },
+          {
+            "clueStart": 17,
+            "clueNum": 15,
+            "clueEnd": 20,
+            "value": "Navigate"
+          },
+          {
+            "clueStart": 22,
+            "clueNum": 16,
+            "clueEnd": 27,
+            "value": "\"Yay, me!\""
+          },
+          {
+            "clueStart": 29,
+            "clueNum": 17,
+            "clueEnd": 33,
+            "value": "Gaucho's tool"
+          },
+          {
+            "clueStart": 34,
+            "clueNum": 18,
+            "clueEnd": 37,
+            "value": "___ and cart (Cockney slang for \"fart\")"
+          },
+          {
+            "clueStart": 39,
+            "clueNum": 19,
+            "clueEnd": 50,
+            "value": "Actress in a dressing room?"
+          },
+          {
+            "clueStart": 51,
+            "clueNum": 21,
+            "clueEnd": 53,
+            "value": "Actress Long or Vardalos"
+          },
+          {
+            "clueStart": 55,
+            "clueNum": 22,
+            "clueEnd": 67,
+            "value": "\"Oorah!\" shouter's group"
+          },
+          {
+            "clueStart": 69,
+            "clueNum": 23,
+            "clueEnd": 73,
+            "value": "Home of William, known for his \"razor\""
+          },
+          {
+            "clueStart": 78,
+            "clueNum": 25,
+            "clueEnd": 80,
+            "value": "Morse dash"
+          },
+          {
+            "clueStart": 87,
+            "clueNum": 26,
+            "clueEnd": 90,
+            "value": "See 32-Down",
+            "related": {
+              "down": [32],
+              "across": []
+            }
+          },
+          {
+            "clueStart": 92,
+            "clueNum": 27,
+            "clueEnd": 100,
+            "value": "Write or call"
+          },
+          {
+            "clueStart": 102,
+            "clueNum": 33,
+            "clueEnd": 105,
+            "value": "Dickensian expletives"
+          },
+          {
+            "clueStart": 109,
+            "clueNum": 35,
+            "clueEnd": 111,
+            "value": "Qty."
+          },
+          {
+            "clueStart": 115,
+            "clueNum": 36,
+            "clueEnd": 118,
+            "value": "Fish eggs"
+          },
+          {
+            "clueStart": 119,
+            "clueNum": 38,
+            "clueEnd": 122,
+            "value": "Israeli port"
+          },
+          {
+            "clueStart": 124,
+            "clueNum": 39,
+            "clueEnd": 130,
+            "value": "Lots and lots (like our losses)"
+          },
+          {
+            "clueStart": 132,
+            "clueNum": 43,
+            "clueEnd": 135,
+            "value": "Wings, to Caesar"
+          },
+          {
+            "clueStart": 136,
+            "clueNum": 44,
+            "clueEnd": 139,
+            "value": "\"Gone With the Wind\" plantation"
+          },
+          {
+            "clueStart": 141,
+            "clueNum": 45,
+            "clueEnd": 147,
+            "value": "Jacket option"
+          },
+          {
+            "clueStart": 149,
+            "clueNum": 46,
+            "clueEnd": 152,
+            "value": "Window part"
+          },
+          {
+            "clueStart": 153,
+            "clueNum": 47,
+            "clueEnd": 156,
+            "value": "Aquaman's real first name"
+          },
+          {
+            "clueStart": 158,
+            "clueNum": 48,
+            "clueEnd": 164,
+            "value": "National cars"
+          },
+          {
+            "clueStart": 166,
+            "clueNum": 49,
+            "clueEnd": 169,
+            "value": "Entr'___"
+          },
+          {
+            "clueStart": 170,
+            "clueNum": 50,
+            "clueEnd": 173,
+            "value": "In one's birthday suit"
+          },
+          {
+            "clueStart": 177,
+            "clueNum": 51,
+            "clueEnd": 179,
+            "value": "X"
+          },
+          {
+            "clueStart": 183,
+            "clueNum": 52,
+            "clueEnd": 186,
+            "value": "Executes, in a way"
+          },
+          {
+            "clueStart": 188,
+            "clueNum": 53,
+            "clueEnd": 196,
+            "value": "They're sometimes mixed, sometimes extended"
+          },
+          {
+            "clueStart": 198,
+            "clueNum": 57,
+            "clueEnd": 201,
+            "value": "___ for Christmas is a lower 39-Down",
+            "related": {
+              "down": [39],
+              "across": []
+            }
+          },
+          {
+            "clueStart": 208,
+            "clueNum": 59,
+            "clueEnd": 210,
+            "value": "Osaka O.K."
+          },
+          {
+            "clueStart": 215,
+            "clueNum": 60,
+            "clueEnd": 219,
+            "value": "Nut tree"
+          },
+          {
+            "clueStart": 221,
+            "clueNum": 62,
+            "clueEnd": 233,
+            "value": "Water + Fish + Instrument?"
+          },
+          {
+            "clueStart": 235,
+            "clueNum": 70,
+            "clueEnd": 237,
+            "value": "Job listing abbr."
+          },
+          {
+            "clueStart": 238,
+            "clueNum": 72,
+            "clueEnd": 249,
+            "value": "McCourt memoir"
+          },
+          {
+            "clueStart": 251,
+            "clueNum": 73,
+            "clueEnd": 254,
+            "value": "\"Be ___!\""
+          },
+          {
+            "clueStart": 255,
+            "clueNum": 74,
+            "clueEnd": 259,
+            "value": "PM that recently got a shoutout from CFO"
+          },
+          {
+            "clueStart": 261,
+            "clueNum": 75,
+            "clueEnd": 266,
+            "value": "Endless, in verse"
+          },
+          {
+            "clueStart": 268,
+            "clueNum": 76,
+            "clueEnd": 271,
+            "value": "Tender"
+          },
+          {
+            "clueStart": 272,
+            "clueNum": 77,
+            "clueEnd": 275,
+            "value": "Type of song or dive"
+          },
+          {
+            "clueStart": 278,
+            "clueNum": 78,
+            "clueEnd": 283,
+            "value": "Sunfish"
+          },
+          {
+            "clueStart": 285,
+            "clueNum": 79,
+            "clueEnd": 288,
+            "value": "___: \"Google, Google, Google\""
+          }
+        ],
+        "D":[
+          {
+            "clueStart": 0,
+            "clueNum": 1,
+            "clueEnd": 51,
+            "value": "Singer Marilyn typo"
+          },
+          {
+            "clueStart": 1,
+            "clueNum": 2,
+            "clueEnd": 69,
+            "value": "___: \"39-Down, 39-Down, 39-Down\"",
+            "related": {
+              "down": [39],
+              "across": []
+            }
+          },
+          {
+            "clueStart": 2,
+            "clueNum": 3,
+            "clueEnd": 189,
+            "value": "Two sugars"
+          },
+          {
+            "clueStart": 3,
+            "clueNum": 4,
+            "clueEnd": 37,
+            "value": "The Browns, on sport tickers"
+          },
+          {
+            "clueStart": 5,
+            "clueNum": 5,
+            "clueEnd": 90,
+            "value": "___, \"I'm irish\""
+          },
+          {
+            "clueStart": 6,
+            "clueNum": 6,
+            "clueEnd": 57,
+            "value": "Lamar who married a Kardashian"
+          },
+          {
+            "clueStart": 7,
+            "clueNum": 7,
+            "clueEnd": 58,
+            "value": "___: \"Peace, I'm going to do my own thing\""
+          },
+          {
+            "clueStart": 8,
+            "clueNum": 8,
+            "clueEnd": 59,
+            "value": "It's written on an env."
+          },
+          {
+            "clueStart": 9,
+            "clueNum": 9,
+            "clueEnd": 60,
+            "value": "Soprano Te Kanawa"
+          },
+          {
+            "clueStart": 10,
+            "clueNum": 10,
+            "clueEnd": 95,
+            "value": "1___, nonexistent LES intersection"
+          },
+          {
+            "clueStart": 13,
+            "clueNum": 11,
+            "clueEnd": 64,
+            "value": "Squirrel on \"Dora the Explorer\""
+          },
+          {
+            "clueStart": 14,
+            "clueNum": 12,
+            "clueEnd": 65,
+            "value": "Abu ___, first Muslim caliph"
+          },
+          {
+            "clueStart": 15,
+            "clueNum": 13,
+            "clueEnd": 66,
+            "value": "Staircase part"
+          },
+          {
+            "clueStart": 16,
+            "clueNum": 14,
+            "clueEnd": 67,
+            "value": "Golf goals"
+          },
+          {
+            "clueStart": 29,
+            "clueNum": 17,
+            "clueEnd": 97,
+            "value": "Rock, in Paris"
+          },
+          {
+            "clueStart": 45,
+            "clueNum": 20,
+            "clueEnd": 96,
+            "value": "Problem at the White House"
+          },
+          {
+            "clueStart": 55,
+            "clueNum": 22,
+            "clueEnd": 89,
+            "value": "Mideast inits."
+          },
+          {
+            "clueStart": 71,
+            "clueNum": 24,
+            "clueEnd": 190,
+            "value": "Flamenco instrument"
+          },
+          {
+            "clueStart": 92,
+            "clueNum": 27,
+            "clueEnd": 194,
+            "value": "Italian city with a dance named after it"
+          },
+          {
+            "clueStart": 93,
+            "clueNum": 28,
+            "clueEnd": 195,
+            "value": "Name dropper?"
+          },
+          {
+            "clueStart": 94,
+            "clueNum": 29,
+            "clueEnd": 196,
+            "value": "Western demonym looked down on by locals"
+          },
+          {
+            "clueStart": 98,
+            "clueNum": 30,
+            "clueEnd": 217,
+            "value": "Like whiteboards and blackboards"
+          },
+          {
+            "clueStart": 99,
+            "clueNum": 31,
+            "clueEnd": 286,
+            "value": "Cops tend to a senator's sore knee?"
+          },
+          {
+            "clueStart": 100,
+            "clueNum": 32,
+            "clueEnd": 185,
+            "value": "With 26-Across, what Oscar is disrupting",
+            "related": {
+              "across": [26],
+              "down": []
+            }
+          },
+          {
+            "clueStart": 102,
+            "clueNum": 33,
+            "clueEnd": 170,
+            "value": "Put money behind, as a candidate"
+          },
+          {
+            "clueStart": 103,
+            "clueNum": 34,
+            "clueEnd": 188,
+            "value": "Warning sound, once"
+          },
+          {
+            "clueStart": 118,
+            "clueNum": 37,
+            "clueEnd": 186,
+            "value": "Palindromic tennis champ"
+          },
+          {
+            "clueStart": 124,
+            "clueNum": 39,
+            "clueEnd": 158,
+            "value": "P0"
+          },
+          {
+            "clueStart": 125,
+            "clueNum": 40,
+            "clueEnd": 159,
+            "value": "\"___-haw!\""
+          },
+          {
+            "clueStart": 129,
+            "clueNum": 41,
+            "clueEnd": 163,
+            "value": "Penn. neighbor"
+          },
+          {
+            "clueStart": 130,
+            "clueNum": 42,
+            "clueEnd": 164,
+            "value": "Grads-to-be"
+          },
+          {
+            "clueStart": 191,
+            "clueNum": 54,
+            "clueEnd": 259,
+            "value": "Grind to ___"
+          },
+          {
+            "clueStart": 192,
+            "clueNum": 55,
+            "clueEnd": 243,
+            "value": "Happens, at the hacienda"
+          },
+          {
+            "clueStart": 193,
+            "clueNum": 56,
+            "clueEnd": 278,
+            "value": "An obviously angry snake or cat"
+          },
+          {
+            "clueStart": 198,
+            "clueNum": 57,
+            "clueEnd": 283,
+            "value": "Belittler"
+          },
+          {
+            "clueStart": 199,
+            "clueNum": 58,
+            "clueEnd": 233,
+            "value": "The Once-___ (Seuss Character in \"The Lorax\")"
+          },
+          {
+            "clueStart": 219,
+            "clueNum": 61,
+            "clueEnd": 287,
+            "value": "\"Do I ___ second?\""
+          },
+          {
+            "clueStart": 221,
+            "clueNum": 62,
+            "clueEnd": 272,
+            "value": "Media frenzy before Ebola"
+          },
+          {
+            "clueStart": 222,
+            "clueNum": 63,
+            "clueEnd": 273,
+            "value": "Sufficient, in poetry"
+          },
+          {
+            "clueStart": 223,
+            "clueNum": 64,
+            "clueEnd": 274,
+            "value": "Ottoman title"
+          },
+          {
+            "clueStart": 224,
+            "clueNum": 65,
+            "clueEnd": 275,
+            "value": "Noted San Francisco gathering of the '60s"
+          },
+          {
+            "clueStart": 228,
+            "clueNum": 66,
+            "clueEnd": 279,
+            "value": "Fence opening"
+          },
+          {
+            "clueStart": 229,
+            "clueNum": 67,
+            "clueEnd": 280,
+            "value": "Like hand-me-downs"
+          },
+          {
+            "clueStart": 230,
+            "clueNum": 68,
+            "clueEnd": 281,
+            "value": "German possessive pronoun"
+          },
+          {
+            "clueStart": 231,
+            "clueNum": 69,
+            "clueEnd": 282,
+            "value": "___ penny (very common, in British lingo)"
+          },
+          {
+            "clueStart": 237,
+            "clueNum": 71,
+            "clueEnd": 288,
+            "value": "Author Steinhauer with the 2009 best seller \"The Tourist\""
+          },
+          {
+            "clueStart": 251,
+            "clueNum": 73,
+            "clueEnd": 285,
+            "value": "Simile words"
+          }
+        ]
+      },
+      "layout":[
+        1,1,1,1,0,1,1,1,1,1,1,0,0,1,1,1,1,
+        1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,
+        1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        0,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,0,
+        0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,
+        1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,
+        1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,
+        1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,
+        1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,
+        1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,
+        0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,0,
+        0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,0,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,
+        1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,
+        1,1,1,1,0,0,1,1,1,1,1,1,0,1,1,1,1
+      ],
+      "answers":[
+        "M",
+        "M",
+        "D",
+        "C",
+        null,
+        "K",
+        "O",
+        "D",
+        "A",
+        "K",
+        "S",
+        null,
+        null,
+        "T",
+        "B",
+        "S",
+        "P",
+        "S",
+        "A",
+        "I",
+        "L",
+        null,
+        "I",
+        "D",
+        "I",
+        "D",
+        "I",
+        "T",
+        null,
+        "R",
+        "I",
+        "A",
+        "T",
+        "A",
+        "O",
+        "R",
+        "S",
+        "E",
+        null,
+        "S",
+        "O",
+        "N",
+        "D",
+        "R",
+        "A",
+        "L",
+        "O",
+        "C",
+        "K",
+        "E",
+        "R",
+        "N",
+        "I",
+        "A",
+        null,
+        "U",
+        "S",
+        "M",
+        "A",
+        "R",
+        "I",
+        "N",
+        "E",
+        "C",
+        "O",
+        "R",
+        "P",
+        "S",
+        null,
+        "O",
+        "C",
+        "C",
+        "A",
+        "M",
+        null,
+        null,
+        null,
+        null,
+        "D",
+        "A",
+        "H",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "C",
+        "A",
+        "R",
+        "E",
+        null,
+        "T",
+        "O",
+        "U",
+        "C",
+        "K",
+        "E",
+        "E",
+        "P",
+        "H",
+        null,
+        "B",
+        "A",
+        "H",
+        "S",
+        null,
+        null,
+        null,
+        "A",
+        "M",
+        "T",
+        null,
+        null,
+        null,
+        "R",
+        "O",
+        "E",
+        "S",
+        "E",
+        "L",
+        "A",
+        "T",
+        null,
+        "M",
+        "Y",
+        "R",
+        "I",
+        "A",
+        "D",
+        "S",
+        null,
+        "A",
+        "L",
+        "A",
+        "E",
+        "T",
+        "A",
+        "R",
+        "A",
+        null,
+        "L",
+        "E",
+        "A",
+        "T",
+        "H",
+        "E",
+        "R",
+        null,
+        "S",
+        "I",
+        "L",
+        "L",
+        "O",
+        "R",
+        "I",
+        "N",
+        null,
+        "R",
+        "E",
+        "N",
+        "T",
+        "A",
+        "L",
+        "S",
+        null,
+        "A",
+        "C",
+        "T",
+        "E",
+        "N",
+        "U",
+        "D",
+        "E",
+        null,
+        null,
+        null,
+        "T",
+        "E",
+        "N",
+        null,
+        null,
+        null,
+        "B",
+        "E",
+        "H",
+        "S",
+        null,
+        "M",
+        "E",
+        "T",
+        "A",
+        "P",
+        "H",
+        "O",
+        "R",
+        "S",
+        null,
+        "A",
+        "L",
+        "L",
+        "I",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "H",
+        "A",
+        "I",
+        null,
+        null,
+        null,
+        null,
+        "B",
+        "E",
+        "E",
+        "C",
+        "H",
+        null,
+        "S",
+        "E",
+        "A",
+        "B",
+        "A",
+        "S",
+        "S",
+        "G",
+        "U",
+        "I",
+        "T",
+        "A",
+        "R",
+        null,
+        "E",
+        "E",
+        "O",
+        "A",
+        "N",
+        "G",
+        "E",
+        "L",
+        "A",
+        "S",
+        "A",
+        "S",
+        "H",
+        "E",
+        "S",
+        null,
+        "A",
+        "P",
+        "A",
+        "L",
+        "R",
+        "O",
+        "H",
+        "I",
+        "T",
+        null,
+        "E",
+        "T",
+        "E",
+        "R",
+        "N",
+        "E",
+        null,
+        "S",
+        "O",
+        "R",
+        "E",
+        "S",
+        "W",
+        "A",
+        "N",
+        null,
+        null,
+        "R",
+        "E",
+        "D",
+        "E",
+        "A",
+        "R",
+        null,
+        "A",
+        "L",
+        "A",
+        "N"
+      ]
+    }
+  }
+]
