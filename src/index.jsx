@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
-import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import { reducers, rootSaga } from 'reducers';
 import createSagaMiddleware from 'redux-saga';
-
 import App from 'app';
-
 
 const sagaMiddleware = createSagaMiddleware();
 const store = createStore(
@@ -25,9 +22,7 @@ if (module.hot) {
 ReactDOM.render(
   <AppContainer>
     <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <App />
     </Provider>
   </AppContainer>,
   document.getElementById('root'),

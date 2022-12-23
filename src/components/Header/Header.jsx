@@ -4,7 +4,7 @@ import { GithubIcon } from 'components/Icons/GithubIcon';
 
 import css from './Header.scss';
 
-export function Header() {
+export default function Header() {
   return (
     <div className={css.headerContainer}>
       <a href="/">

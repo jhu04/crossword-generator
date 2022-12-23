@@ -34,7 +34,7 @@ class Clue extends React.Component {
 const mapStateToProps = (state, ownProps) => {
   const {activeCellNumber, activeDirection, cells, clues, width} = state.puzzle[ownProps.puzzleName] || {};
   const {clueNumber, direction} = ownProps;
-  if (state.modal.activeModal === 'start') {
+  if (['start', 'pause'].includes(state.modal.activeModal)) {
     return {
       clue: clues[direction][clueNumber],
       obscured: true,
@@ -48,7 +48,7 @@ const mapStateToProps = (state, ownProps) => {
     isActiveDirection: activeDirection === direction,
     isFilled: clueRange(clue, direction, width).every(cellNumber => cells[cellNumber].guess),
     clue: clues[direction][clueNumber],
-    obscured: state.modal.activeModal === 'start',
+    obscured: ['start', 'pause'].includes(state.modal.activeModal),
   }
 };
 

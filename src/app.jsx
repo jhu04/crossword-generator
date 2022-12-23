@@ -1,25 +1,29 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Link
+} from 'react-router-dom';
 
-import './index.css'
-import { Header } from 'components/Header/Header';
+import Header from 'components/Header/Header';
 import Home from 'pages/Home/Home';
-import { Puzzle } from 'pages/Puzzle/Puzzle';
-import { NotFound } from 'pages/NotFound/NotFound';
-
+import Puzzle from 'pages/Puzzle/Puzzle';
+import NotFound from 'pages/NotFound/NotFound';
+import css from './index.scss';
 
 function App() {
   return (
-    // <Routes>
-    //   <Route path="/">
-    //     <Route index element={<Home />} />
-    //   </Route>
-    // </Routes>
-    <div>
-      <Header />
-      <Route path="/" component={Home} />
-      <Route path="/puzzle/:puzzleName" component={Puzzle} />
-    </div>
+    <Router>
+      <main>
+        <Header />
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/puzzle/:puzzleName" component={Puzzle} />
+          <Route path="*" component={NotFound} />
+        </Switch>
+      </main>
+    </Router>
   );
 }
 

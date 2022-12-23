@@ -8,6 +8,7 @@ import { Toolbar } from 'components/Toolbar/Toolbar';
 import { PuzzleHeader } from 'components/Header/PuzzleHeader';
 import { Modal } from 'components/Modal/Modal';
 import { Loading } from 'pages/Loading/Loading';
+import { NotFound } from 'pages/NotFound/NotFound'
 
 import { across, down } from 'constants/clue';
 import {
@@ -128,7 +129,7 @@ class Puzzle extends React.Component {
     }
 
     if (puzzleIs404) {
-      return <div />; // handled by router 404
+      return <NotFound />;
     }
 
     const { puzzleName } = this.props.match.params;
@@ -151,7 +152,7 @@ class Puzzle extends React.Component {
             </div>
           </div>
         </div>
-        <Modal type="start" activeModal={this.props.activeModal} style="absolute" closeModal={this.startPuzzle} />
+        <Modal type="start" activeModal={this.props.activeModal} closeModal={this.startPuzzle} />
         <Modal type="pause" activeModal={this.props.activeModal} closeModal={this.startPuzzle} overlayClick />
         <Modal type="done" activeModal={this.props.activeModal} closeModal={this.finishPuzzle} puzzleName={puzzleName} overlayClick />
         <Modal type="incorrect" activeModal={this.props.activeModal} closeModal={this.startPuzzle} overlayClick />
@@ -203,6 +204,4 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
 
 const connectedPuzzle = connect(mapStateToProps, mapDispatchToProps, mergeProps)(Puzzle);
 
-export {
-  connectedPuzzle as Puzzle,
-};
+export default connectedPuzzle;

@@ -133,10 +133,10 @@ export class Modal extends React.Component {
   }
 
   render() {
-    const modalClasses = classNames(css.modal, css[`modal_${this.props.style}`], {
+    const modalClasses = classNames(css.modal, {
       [css.modal_open]: this.props.activeModal === this.props.type,
     });
-    const overlayClasses = classNames(css.overlay, css[`overlay_${this.props.style}`]);
+    const overlayClasses = classNames(css.overlay);
 
     const Content = CONTENT[this.props.type];
 

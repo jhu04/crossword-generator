@@ -4,29 +4,17 @@
   left: 0;
   top: 0;
   width: 100%;
-  z-index: 1;
+  z-index: 15;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.overlay_fixed {
-  backdrop-filter: blur(20px);
   position: fixed;
 }
 
-.overlay_absolute {
+.overlay {
   background-color: #fafafa;
   opacity: .86;
-  position: absolute;
-}
-
-.modal_fixed {
   position: fixed;
-}
-
-.modal_absolute {
-  position: absolute;
 }
 
 .modal_open {
