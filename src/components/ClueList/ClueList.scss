@@ -1,7 +1,7 @@
 .clueListContainer {
   padding: 0 3px;
   box-sizing: border-box;
-  overflow: hidden;
+  // overflow: hidden;
   flex: 1;
   min-width: 250px;
 }
@@ -11,6 +11,7 @@
   text-transform: uppercase;
   font-size: .875rem;
   line-height: 2;
+  position: sticky;
 }
 
 .clueList {

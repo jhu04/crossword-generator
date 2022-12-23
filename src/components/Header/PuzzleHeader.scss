@@ -4,11 +4,13 @@
   display: flex;
   justify-content: space-between;
   z-index: 20;
+  flex: 0 1 auto;
 }
 
 .title {
   font-size: 40px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -1px;
   line-height: 56px;
 }
 
@@ -19,7 +21,7 @@
 }
 
 .subtitle {
-  font-weight: 200;
+  font-weight: 400;
   font-size: 14px;
 }
 

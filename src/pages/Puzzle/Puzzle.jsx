@@ -5,10 +5,10 @@ import { Grid } from 'components/Grid/Grid';
 import { ClueList } from 'components/ClueList/ClueList';
 import { ActiveClue } from 'components/ActiveClue/ActiveClue';
 import { Toolbar } from 'components/Toolbar/Toolbar';
-import { PuzzleHeader } from 'components/Header/PuzzleHeader';
 import { Modal } from 'components/Modal/Modal';
-import { Loading } from 'pages/Loading/Loading';
-import { NotFound } from 'pages/NotFound/NotFound'
+import PuzzleHeader from 'components/Header/PuzzleHeader';
+import Loading from 'pages/Loading/Loading';
+import NotFound from 'pages/NotFound/NotFound'
 
 import { across, down } from 'constants/clue';
 import {

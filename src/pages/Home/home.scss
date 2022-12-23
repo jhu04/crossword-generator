@@ -20,7 +20,7 @@
 }
 
 .mainMenuImage {
-  height: 45px;
+  height: 48px;
   width: auto;
 }
 
@@ -67,7 +67,7 @@ h2 {
   border: none;
   border-radius: 37px;
   color: #fff;
-  min-width: 50px;
+  min-width: 40px;
   max-width: 80px;
   min-height: 34px;
   padding: 0 1.5em;
@@ -75,13 +75,18 @@ h2 {
 }
 
 @media (max-width: 800px) {
+  .mainMenuImage {
+    height: 32px;
+    width: auto;
+  }
+
   h1 {
     font-size: 32px;
     font-weight: 800;
   }
 
   .wrapper {
-    display:grid;
+    display: grid;
     padding-right: 80px;
   }
 

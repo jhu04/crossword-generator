@@ -20,10 +20,14 @@ img {
 }
 
 @media (max-width: 600px) {
+  .headerContainer {
+    padding: 12px 32px;
+  }
+
   img {
-    height: 25px;
+    height: 24px;
   }
   svg {
-    height: 25px;
+    height: 24px;
   }
 }

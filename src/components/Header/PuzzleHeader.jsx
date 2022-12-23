@@ -2,8 +2,6 @@ import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 
-import { GithubIcon } from 'components/Icons/GithubIcon';
-
 import css from './PuzzleHeader.scss';
 
 function TitleDiv({ title, date }) {
@@ -50,6 +48,4 @@ const mapStateToProps = (state, ownProps) => {
 
 const connectedHeader = connect(mapStateToProps)(PuzzleHeader);
 
-export {
-  connectedHeader as PuzzleHeader,
-};
+export default connectedHeader;

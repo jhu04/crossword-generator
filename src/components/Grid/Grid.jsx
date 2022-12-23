@@ -2,15 +2,14 @@ import React from 'react';
 import _ from 'lodash';
 import { connect } from 'react-redux';
 
-import {Cell} from 'components/Cell/Cell';
-
+import { Cell } from 'components/Cell/Cell';
 
 import css from './Grid.scss';
 
 
 class Grid extends React.Component {
   render() {
-    const {width, puzzleName} = this.props;
+    const { width, puzzleName } = this.props;
 
     return (
       <div className={css.gridContainer}>
@@ -19,17 +18,17 @@ class Grid extends React.Component {
             {_.range(width).map(rowNumber => (
               <div className={css.gridRow} key={rowNumber}>
                 {_.range(width).map((colNumber) => {
-                    const cellNumber = rowNumber * width + colNumber;
-                    return (
-                      <Cell
-                        key={cellNumber}
-                        cellNumber={cellNumber}
-                        puzzleName={puzzleName}
-                      />
-                    );
-                  })}
+                  const cellNumber = rowNumber * width + colNumber;
+                  return (
+                    <Cell
+                      key={cellNumber}
+                      cellNumber={cellNumber}
+                      puzzleName={puzzleName}
+                    />
+                  );
+                })}
               </div>
-              ))}
+            ))}
           </div>
         </div>
       </div>
@@ -38,7 +37,7 @@ class Grid extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const {width} = state.puzzle[ownProps.puzzleName] || {};
+  const { width } = state.puzzle[ownProps.puzzleName] || {};
   return {
     width,
   }

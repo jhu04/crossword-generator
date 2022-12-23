@@ -21,14 +21,14 @@ class ClueList extends React.Component {
   }
 
   render() {
-    const {direction, clues, puzzleName} = this.props;
+    const { direction, clues, puzzleName } = this.props;
 
     return (
       <div className={css.clueListContainer}>
         <div className={css.directionName}>
           {direction}
         </div>
-        <ol className={css.clueList} ref={list => { this.list = list}}>
+        <ol className={css.clueList} ref={list => { this.list = list }}>
           {_.map(clues, (clue, clueNumberString) => {
             const clueNumber = Number(clueNumberString);
             return (
@@ -37,7 +37,7 @@ class ClueList extends React.Component {
                 puzzleName={puzzleName}
                 clueNumber={clueNumber}
                 direction={direction}
-                clueRef={clue => {this.clues[clueNumber] = clue}}
+                clueRef={clue => { this.clues[clueNumber] = clue }}
               />
             )
           })}
@@ -48,8 +48,8 @@ class ClueList extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const {clues, activeCellNumber, cells} = state.puzzle[ownProps.puzzleName] || {};
-  const {direction} = ownProps;
+  const { clues, activeCellNumber, cells } = state.puzzle[ownProps.puzzleName] || {};
+  const { direction } = ownProps;
   if (state.modal.activeModal === 'start') {
     return {
       clues: clues[direction]
