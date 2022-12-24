@@ -25,7 +25,7 @@ function App() {
   // TODO: buggy
   useEffect(() => {
     console.log(`${SERVER_URL}/api/size/${freeModeSize}`);
-    Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
+    Axios.get(`${SERVER_URL}/api/all/`)
       .then((res) => res.data)
       .then(setCrosswordsBySize)
       .catch((err) => console.error(err.toJSON()));

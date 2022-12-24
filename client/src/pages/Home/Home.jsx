@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 import css from './Home.scss'
-import calendarIcon from 'images/calendar-icon.png'
-import birdsflyingIcon from 'images/birdsflying-icon.jpg'
+import calendarIcon from 'images/calendar.svg'
+import birdsflyingIcon from 'images/birdsflying.svg'
 
 function Home({setFreeModeSize}) {
   console.log(setFreeModeSize);

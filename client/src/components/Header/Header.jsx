@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from 'images/nytimes_games.jpg'
+import logo from 'images/crossgen.png'
 import { GithubIcon } from 'components/Icons/GithubIcon';
 
 import css from './Header.scss';
