@@ -1,11 +1,25 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 import css from './Home.scss'
 import calendarIcon from 'images/calendar-icon.png'
 import birdsflyingIcon from 'images/birdsflying-icon.jpg'
 
-function Home() {
+function Home({setFreeModeSize}) {
+  console.log(setFreeModeSize);
+  function FreeModeButton(freeModeSize) {
+    return (
+      <Link to={`/puzzle/free/${freeModeSize}`}>
+        <div className={css.button} onClick={() => {
+          setFreeModeSize(freeModeSize);
+        }}>
+          {freeModeSize}x{freeModeSize}
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <div className={css.wrapper}>
       <div className={css.panel}>
@@ -17,16 +31,16 @@ function Home() {
           </h2>
           <div className={css.buttonGroup}>
             <div className={css.buttonRow}>
-              <a href="/puzzle/mini">
+              <Link to="/puzzle/daily/mini">
                 <div className={css.button}>
                   Play Mini
                 </div>
-              </a>
-              <a href="/puzzle/maxi">
+              </Link>
+              <Link to="/puzzle/daily/maxi">
                 <div className={css.button}>
                   Play Maxi
                 </div>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -37,26 +51,14 @@ function Home() {
           <h1>Free Mode</h1>
           <div className={css.buttonGroup}>
             <div className={css.buttonRow}>
-              <div className={css.button}>
-                5x5
-              </div>
-              <div className={css.button}>
-                7x7
-              </div>
-              <div className={css.button}>
-                9x9
-              </div>
+              {FreeModeButton(5)}
+              {FreeModeButton(7)}
+              {FreeModeButton(9)}
             </div>
             <div className={css.buttonRow}>
-              <div className={css.button}>
-                11x11
-              </div>
-              <div className={css.button}>
-                13x13
-              </div>
-              <div className={css.button}>
-                15x15
-              </div>
+              {FreeModeButton(11)}
+              {FreeModeButton(13)}
+              {FreeModeButton(15)}
             </div>
           </div>
         </div>
