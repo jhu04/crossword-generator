@@ -41,7 +41,7 @@ class Timer extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const puzzle = state.puzzle[ownProps.puzzleName] || {};
+  const puzzle = state.puzzle[ownProps.puzzleId] || {};
   return {
     timer: puzzle.timer,
     paused: state.modal.activeModal === 'pause' || puzzle.solved,

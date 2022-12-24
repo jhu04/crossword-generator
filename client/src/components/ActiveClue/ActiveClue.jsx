@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 
-import {abbreviatedDirections} from 'constants/clue';
+import { abbreviatedDirections } from 'constants/clue';
 
 import css from './ActiveClue.scss';
 
@@ -33,7 +33,7 @@ class ActiveClue extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const {activeCellNumber, activeDirection, cells, clues} = state.puzzle[ownProps.puzzleName] || {};
+  const { activeCellNumber, activeDirection, cells, clues } = state.puzzle[ownProps.puzzleId] || {};
   if (state.modal.activeModal === 'start') {
     return {
       obscured: true,

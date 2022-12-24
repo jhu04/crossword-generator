@@ -1,9 +1,8 @@
 import React from 'react';
 import {
   BrowserRouter as Router,
-  Route,
   Switch,
-  Link
+  Route
 } from 'react-router-dom';
 
 import Header from 'components/Header/Header';
@@ -19,7 +18,7 @@ function App() {
         <Header />
         <Switch>
           <Route exact path="/" component={Home} />
-          <Route exact path="/puzzle/:puzzleName" component={Puzzle} />
+          <Route exact path="/puzzle/:puzzleId" component={Puzzle} />
           <Route path="*" component={NotFound} />
         </Switch>
       </main>

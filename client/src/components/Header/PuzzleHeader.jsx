@@ -40,7 +40,7 @@ class PuzzleHeader extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { puzzleMeta } = state.puzzle[ownProps.puzzleName] || {};
+  const { puzzleMeta } = state.puzzle[ownProps.puzzleId] || {};
   return {
     ...puzzleMeta
   }

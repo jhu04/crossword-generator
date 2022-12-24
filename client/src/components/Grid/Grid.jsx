@@ -9,7 +9,7 @@ import css from './Grid.scss';
 
 class Grid extends React.Component {
   render() {
-    const { width, puzzleName } = this.props;
+    const { width, puzzleId } = this.props;
 
     return (
       <div className={css.gridContainer}>
@@ -23,7 +23,7 @@ class Grid extends React.Component {
                     <Cell
                       key={cellNumber}
                       cellNumber={cellNumber}
-                      puzzleName={puzzleName}
+                      puzzleId={puzzleId}
                     />
                   );
                 })}
@@ -37,7 +37,7 @@ class Grid extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { width } = state.puzzle[ownProps.puzzleName] || {};
+  const { width } = state.puzzle[ownProps.puzzleId] || {};
   return {
     width,
   }

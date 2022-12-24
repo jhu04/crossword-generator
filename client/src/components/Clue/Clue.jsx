@@ -32,7 +32,7 @@ class Clue extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const {activeCellNumber, activeDirection, cells, clues, width} = state.puzzle[ownProps.puzzleName] || {};
+  const {activeCellNumber, activeDirection, cells, clues, width} = state.puzzle[ownProps.puzzleId] || {};
   const {clueNumber, direction} = ownProps;
   if (['start', 'pause'].includes(state.modal.activeModal)) {
     return {
@@ -54,7 +54,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    clueClick: (puzzleName, direction, clueNumber) => () => dispatch(clueClick(puzzleName, direction, clueNumber)),
+    clueClick: (puzzleId, direction, clueNumber) => () => dispatch(clueClick(puzzleId, direction, clueNumber)),
   }
 };
 
@@ -63,7 +63,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
     ...stateProps,
     ...dispatchProps,
     ...ownProps,
-    clueClick: dispatchProps.clueClick(ownProps.puzzleName, ownProps.direction, ownProps.clueNumber),
+    clueClick: dispatchProps.clueClick(ownProps.puzzleId, ownProps.direction, ownProps.clueNumber),
   }
 };
 

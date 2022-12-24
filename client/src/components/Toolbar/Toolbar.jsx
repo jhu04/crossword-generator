@@ -42,10 +42,10 @@ class Toolbar extends React.Component {
   }
 
   render() {
-    const { puzzleName, solved, openPauseModal } = this.props;
+    const { puzzleId, solved, openPauseModal } = this.props;
     return (
       <div className={css.toolbarContainer}>
-        <Timer puzzleName={puzzleName} openPauseModal={openPauseModal} />
+        <Timer puzzleId={puzzleId} openPauseModal={openPauseModal} />
         {solved ? (
           <div className={css.toolbarMenu}>
             <MenuButton onClick={this.resetPuzzle}>
@@ -77,7 +77,7 @@ class Toolbar extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const puzzle = state.puzzle[ownProps.puzzleName] || {};
+  const puzzle = state.puzzle[ownProps.puzzleId] || {};
 
   return {
     solved: puzzle.solved,
@@ -86,21 +86,21 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    clearOption: puzzleName => option => dispatch(clearOption(puzzleName, option)),
-    checkOption: puzzleName => option => dispatch(checkOption(puzzleName, option)),
-    revealOption: puzzleName => option => dispatch(revealOption(puzzleName, option)),
+    clearOption: puzzleId => option => dispatch(clearOption(puzzleId, option)),
+    checkOption: puzzleId => option => dispatch(checkOption(puzzleId, option)),
+    revealOption: puzzleId => option => dispatch(revealOption(puzzleId, option)),
   }
 };
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
-  const { puzzleName } = ownProps;
+  const { puzzleId } = ownProps;
   return {
     ...stateProps,
     ...dispatchProps,
     ...ownProps,
-    clearOption: dispatchProps.clearOption(puzzleName),
-    checkOption: dispatchProps.checkOption(puzzleName),
-    revealOption: dispatchProps.revealOption(puzzleName),
+    clearOption: dispatchProps.clearOption(puzzleId),
+    checkOption: dispatchProps.checkOption(puzzleId),
+    revealOption: dispatchProps.revealOption(puzzleId),
   }
 };
 

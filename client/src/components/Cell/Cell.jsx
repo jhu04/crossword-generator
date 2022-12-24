@@ -55,7 +55,7 @@ class Cell extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { cells, activeDirection, clues, activeCellNumber, width } = state.puzzle[ownProps.puzzleName] || {};
+  const { cells, activeDirection, clues, activeCellNumber, width } = state.puzzle[ownProps.puzzleId] || {};
   if (state.modal.activeModal === 'start') {
     return {
       ...cells[ownProps.cellNumber],
@@ -75,7 +75,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    cellClick: (puzzleName, cellNumber) => () => dispatch(cellClick(puzzleName, cellNumber)),
+    cellClick: (puzzleId, cellNumber) => () => dispatch(cellClick(puzzleId, cellNumber)),
   }
 };
 
@@ -84,7 +84,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
     ...stateProps,
     ...dispatchProps,
     ...ownProps,
-    cellClick: dispatchProps.cellClick(ownProps.puzzleName, ownProps.cellNumber),
+    cellClick: dispatchProps.cellClick(ownProps.puzzleId, ownProps.cellNumber),
   }
 }
 

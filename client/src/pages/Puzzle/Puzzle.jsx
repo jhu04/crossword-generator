@@ -132,29 +132,29 @@ class Puzzle extends React.Component {
       return <NotFound />;
     }
 
-    const { puzzleName } = this.props.match.params;
+    const { puzzleId } = this.props.match.params;
 
     return (
       <div className={css.app}>
         <div className={css.puzzleContainer}>
-          <PuzzleHeader puzzleName={puzzleName} />
+          <PuzzleHeader puzzleId={puzzleId} />
           <div className={css.gameContainer}>
-            <Toolbar puzzleName={puzzleName} openPauseModal={this.openPauseModal} resetPuzzle={this.resetPuzzle} />
+            <Toolbar puzzleId={puzzleId} openPauseModal={this.openPauseModal} resetPuzzle={this.resetPuzzle} />
             <div className={css.playArea}>
               <div className={css.gridContainer}>
-                <ActiveClue puzzleName={puzzleName} />
-                <Grid puzzleName={puzzleName} />
+                <ActiveClue puzzleId={puzzleId} />
+                <Grid puzzleId={puzzleId} />
               </div>
               <div className={css.cluesContainer}>
-                <ClueList direction={across} puzzleName={puzzleName} />
-                <ClueList direction={down} puzzleName={puzzleName} />
+                <ClueList direction={across} puzzleId={puzzleId} />
+                <ClueList direction={down} puzzleId={puzzleId} />
               </div>
             </div>
           </div>
         </div>
         <Modal type="start" activeModal={this.props.activeModal} closeModal={this.startPuzzle} />
         <Modal type="pause" activeModal={this.props.activeModal} closeModal={this.startPuzzle} overlayClick />
-        <Modal type="done" activeModal={this.props.activeModal} closeModal={this.finishPuzzle} puzzleName={puzzleName} overlayClick />
+        <Modal type="done" activeModal={this.props.activeModal} closeModal={this.finishPuzzle} puzzleId={puzzleId} overlayClick />
         <Modal type="incorrect" activeModal={this.props.activeModal} closeModal={this.startPuzzle} overlayClick />
       </div>
     );
@@ -162,7 +162,7 @@ class Puzzle extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const puzzle =  state.puzzle[ownProps.match.params.puzzleName];
+  const puzzle =  state.puzzle[ownProps.match.params.puzzleId];
   const puzzleIsLoading = !puzzle;
   const puzzleIs404 = puzzle === STATUS_404;
   return {
@@ -175,30 +175,30 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  fetchPuzzle: puzzleName => () => dispatch(fetchPuzzle(puzzleName)),
-  guessCell: puzzleName => guess => dispatch(guessCell(puzzleName, guess)),
-  moveActiveCell: puzzleName => move => dispatch(moveActiveCell(puzzleName, move)),
-  moveActiveClue: puzzleName => move => dispatch(moveActiveClue(puzzleName, move)),
-  removeGuess: puzzleName => () => dispatch(removeGuess(puzzleName)),
+  fetchPuzzle: puzzleId => () => dispatch(fetchPuzzle(puzzleId)),
+  guessCell: puzzleId => guess => dispatch(guessCell(puzzleId, guess)),
+  moveActiveCell: puzzleId => move => dispatch(moveActiveCell(puzzleId, move)),
+  moveActiveClue: puzzleId => move => dispatch(moveActiveClue(puzzleId, move)),
+  removeGuess: puzzleId => () => dispatch(removeGuess(puzzleId)),
   openModal: modalName => dispatch(openModal(modalName)),
   closeModal: () => dispatch(closeModal()),
-  startTimer: puzzleName => () => dispatch(startTimer(puzzleName)),
-  stopTimer: puzzleName => () => dispatch(stopTimer(puzzleName)),
+  startTimer: puzzleId => () => dispatch(startTimer(puzzleId)),
+  stopTimer: puzzleId => () => dispatch(stopTimer(puzzleId)),
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
-  const { puzzleName } = ownProps.match.params;
+  const { puzzleId } = ownProps.match.params;
   return {
     ...stateProps,
     ...dispatchProps,
     ...ownProps,
-    guessCell: dispatchProps.guessCell(puzzleName),
-    fetchPuzzle: dispatchProps.fetchPuzzle(puzzleName),
-    moveActiveCell: dispatchProps.moveActiveCell(puzzleName),
-    moveActiveClue: dispatchProps.moveActiveClue(puzzleName),
-    removeGuess: dispatchProps.removeGuess(puzzleName),
-    startTimer: dispatchProps.startTimer(puzzleName),
-    stopTimer: dispatchProps.stopTimer(puzzleName),
+    guessCell: dispatchProps.guessCell(puzzleId),
+    fetchPuzzle: dispatchProps.fetchPuzzle(puzzleId),
+    moveActiveCell: dispatchProps.moveActiveCell(puzzleId),
+    moveActiveClue: dispatchProps.moveActiveClue(puzzleId),
+    removeGuess: dispatchProps.removeGuess(puzzleId),
+    startTimer: dispatchProps.startTimer(puzzleId),
+    stopTimer: dispatchProps.stopTimer(puzzleId),
   }
 };
 

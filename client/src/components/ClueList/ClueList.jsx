@@ -21,7 +21,7 @@ class ClueList extends React.Component {
   }
 
   render() {
-    const { direction, clues, puzzleName } = this.props;
+    const { direction, clues, puzzleId } = this.props;
 
     return (
       <div className={css.clueListContainer}>
@@ -34,7 +34,7 @@ class ClueList extends React.Component {
             return (
               <Clue
                 key={clueNumber}
-                puzzleName={puzzleName}
+                puzzleId={puzzleId}
                 clueNumber={clueNumber}
                 direction={direction}
                 clueRef={clue => { this.clues[clueNumber] = clue }}
@@ -48,7 +48,7 @@ class ClueList extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { clues, activeCellNumber, cells } = state.puzzle[ownProps.puzzleName] || {};
+  const { clues, activeCellNumber, cells } = state.puzzle[ownProps.puzzleId] || {};
   const { direction } = ownProps;
   if (state.modal.activeModal === 'start') {
     return {

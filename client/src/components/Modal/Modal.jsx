@@ -90,7 +90,7 @@ class DoneContent extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const puzzle =  state.puzzle[ownProps.puzzleName];
+  const puzzle =  state.puzzle[ownProps.puzzleId];
 
   return {
     timer: puzzle.timer,
