@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { directions, across, down } from 'constants/clue';
 import { CODE_ARROW_RIGHT, CODE_ARROW_LEFT, CODE_ARROW_DOWN, CODE_ARROW_UP } from 'constants/keys';
-import {WORD, PUZZLE, INCOMPLETE, SQUARE} from 'constants/scopes';
+import { WORD, PUZZLE, INCOMPLETE, SQUARE } from 'constants/scopes';
 
 
 export const getOtherDirection = direction => {
@@ -122,7 +122,7 @@ export const getMoveClueNumber = (activeCellNumber, activeDirection, cells, clue
   const numClues = _.keys(clues[across]).length + _.keys(clues[down]).length;
 
   // move to the next empty cell
-  let {newClue, newDirection} = getNextClue(activeCellNumber, activeDirection, cells, clues, width, defaultClues, forward);
+  let { newClue, newDirection } = getNextClue(activeCellNumber, activeDirection, cells, clues, width, defaultClues, forward);
   for (let i = 0; i < numClues - 1; i += 1) {
     const newCellNumber = getNextCellNumber(newClue.clueStart, newClue.clueEnd + 1, cells, newDirection, width);
 
@@ -133,11 +133,11 @@ export const getMoveClueNumber = (activeCellNumber, activeDirection, cells, clue
       }
     }
 
-    ({newClue, newDirection} = getNextClue(newClue.clueEnd, newDirection, cells, clues, width, defaultClues, forward));
+    ({ newClue, newDirection } = getNextClue(newClue.clueEnd, newDirection, cells, clues, width, defaultClues, forward));
   }
 
   // there are no empty cells, move to the next clue
-  ({newClue, newDirection} = getNextClue(activeCellNumber, activeDirection, cells, clues, width, defaultClues, forward));
+  ({ newClue, newDirection } = getNextClue(activeCellNumber, activeDirection, cells, clues, width, defaultClues, forward));
   const newCellNumber = newClue.clueStart;
 
   return {
@@ -184,7 +184,7 @@ export const getMoveCellNumber = (activeCellNumber, activeDirection, cells, widt
   }
 };
 
-export const getClickClueNumber  = (cells, clues, width, direction, clueNumber) => {
+export const getClickClueNumber = (cells, clues, width, direction, clueNumber) => {
   const newClue = clues[direction][clueNumber];
   const nextEmptyCellNumber = getNextCellNumber(newClue.clueStart, newClue.clueEnd + 1, cells, direction, width);
 
@@ -260,7 +260,7 @@ export const getCellChange = (callback, cells, clues, width, activeCellNumber, a
     });
     return changeCells(cellRange, cells, callback);
 
-    } else if (option === PUZZLE) {
+  } else if (option === PUZZLE) {
     return changeCells(_.range(cells.length), cells, callback);
   }
 };

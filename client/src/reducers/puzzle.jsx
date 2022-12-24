@@ -189,7 +189,7 @@ export function reducer(state = {}, action) {
         }
       }
 
-      const puzzleObject = action.response[0];
+      const puzzleObject = action.response;
       return {
         ...state,
         [action.puzzleId]: {

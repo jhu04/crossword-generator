@@ -9,14 +9,13 @@ export function puzzleFetcher(puzzleId, headers = {}) {
       : process.env.SERVER_URL_DEV;
 
   return Axios.get(`${SERVER_URL}/api/id/${puzzleId}`)
-    .then((res) => {
-      if (res.status === 200) {
-        return res.json();
-      } else if (res.status === 404) {
+    .then((res) => { return res.data; })
+    .catch((err) => {
+      console.error(err);
+      if (err.response.status == 404) {
         return STATUS_404;
+      } else {
+        console.error(err);
       }
-      throw new Error('Invalid status', response.status);
-    }).catch((err) => {
-      console.error('Failed to fetch puzzle: ', puzzleId, err);
     });
 }

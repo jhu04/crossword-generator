@@ -37,9 +37,9 @@ router.get('/api/id/:id', async (req, res) => {
     } catch (err) {
       res.json(err);
     }
-  } else { res.sendStatus(404); }
+  } else { 
+    res.sendStatus(404); 
+  }
 });
-
-
 
 module.exports = router;
