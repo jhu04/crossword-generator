@@ -32,6 +32,10 @@ function App() {
       .catch((err) => console.error(err.toJSON()));
   }, [freeModeSize]);
 
+  function RedirectedFreeMode() {
+    window.location.href = `/puzzle/${selectedCrossword}`;
+  }
+
   // TODO: update mini/, maxi/
   return (
     <Router>
@@ -51,7 +55,7 @@ function App() {
           <Route exact path="/puzzle/free/redirect">
             {
               selectedCrossword
-                ? <Redirect to={`/puzzle/${selectedCrossword}`} />
+                ? <RedirectedFreeMode />
                 : <Loading />
             }
           </Route>
