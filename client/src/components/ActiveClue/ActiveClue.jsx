@@ -34,7 +34,7 @@ class ActiveClue extends React.Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { activeCellNumber, activeDirection, cells, clues } = state.puzzle[ownProps.puzzleId] || {};
-  if (state.modal.activeModal === 'start') {
+  if (['start', 'pause'].includes(state.modal.activeModal)) {
     return {
       obscured: true,
       activeClue: {},
@@ -45,7 +45,7 @@ const mapStateToProps = (state, ownProps) => {
   const activeClue = clues[activeDirection][activeCell.cellClues[activeDirection]];
   const abbreviatedDirection = abbreviatedDirections[activeDirection];
   return {
-    obscured: state.modal.activeModal === 'start',
+    obscured: ['start', 'pause'].includes(state.modal.activeModal),
     abbreviatedDirection,
     activeClue,
   }

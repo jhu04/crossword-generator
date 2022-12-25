@@ -1,5 +1,10 @@
 * {
   font-family: Inter, sans-serif;
+  user-select: none;
+}
+
+img {
+  pointer-events: none;
 }
 
 html,

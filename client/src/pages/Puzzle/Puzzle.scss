@@ -33,6 +33,7 @@
 }
 
 .cluesContainer {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   overscroll-behavior: contain;

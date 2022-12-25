@@ -43,7 +43,7 @@ class Puzzle extends React.Component {
     }
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.props.fetchPuzzle();
     this.props.openModal('start');
     document.addEventListener("keydown", this.handleKeyDown);
@@ -54,7 +54,7 @@ class Puzzle extends React.Component {
     document.removeEventListener("keydown", this.handleKeyDown);
   }
 
-  componentDidUpdate(nextProps) {
+  componentWillUpdate(nextProps) {
     if (nextProps.solved && !this.props.solved) {
       this.pausePuzzle();
       this.props.openModal('done');

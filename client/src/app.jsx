@@ -53,11 +53,7 @@ function App() {
             <Redirect to="/puzzle/63a7b79854254903cdd9410f" />
           </Route>
           <Route exact path="/puzzle/free/redirect">
-            {
-              selectedCrossword
-                ? <RedirectedFreeMode />
-                : <Loading />
-            }
+            {selectedCrossword ? <RedirectedFreeMode /> : <Loading />}
           </Route>
           <Route path="*" component={NotFound} />
         </Switch>

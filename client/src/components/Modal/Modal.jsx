@@ -112,7 +112,7 @@ export class Modal extends React.Component {
     style: 'fixed',
   };
 
-  componentDidMount() {
+  componentWillMount() {
     document.addEventListener("keydown", this.handleKeyDown);
   }
 
