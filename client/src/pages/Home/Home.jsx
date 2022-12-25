@@ -10,7 +10,7 @@ function Home({setFreeModeSize}) {
   console.log(setFreeModeSize);
   function FreeModeButton(freeModeSize) {
     return (
-      <Link to={`/puzzle/free/${freeModeSize}`}>
+      <Link to={'/puzzle/free/redirect'}>
         <div className={css.button} onClick={() => {
           setFreeModeSize(freeModeSize);
         }}>
@@ -58,7 +58,7 @@ function Home({setFreeModeSize}) {
             <div className={css.buttonRow}>
               {FreeModeButton(11)}
               {FreeModeButton(13)}
-              {FreeModeButton(15)}
+              {FreeModeButton(17)}
             </div>
           </div>
         </div>

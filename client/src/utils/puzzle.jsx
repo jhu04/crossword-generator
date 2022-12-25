@@ -319,7 +319,7 @@ export const initializePuzzle = (puzzleObject) => {
       }
 
       cluesByNumber[direction][clue.clueNumber] = clue;
-
+      
       clueRange(clue, direction, width).forEach(clueNumber => {
         cells[clueNumber].cellClues[direction] = clue.clueNumber;
       });

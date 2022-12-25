@@ -5,6 +5,7 @@ h1 {
 }
 
 h2 {
+  margin-top: 20px;
   font-size: 18px;
   font-weight: 400;
 }
@@ -20,7 +21,7 @@ h2 {
 
 .bgText::after {
   color: #000;
-  opacity: 0.2;
+  opacity: 0.15;
   content: attr(txt);
   display: block;
   font-size: 360px;
