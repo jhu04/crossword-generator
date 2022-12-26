@@ -1,0 +1,96 @@
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  padding: 16px;
+}
+
+.panel {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px;
+  padding: 16px;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+.content {
+  text-align: center;
+}
+
+.mainMenuImage {
+  height: 80px;
+  width: auto;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -1.5px;
+  margin: 0px;
+  margin-top: 24px;
+  padding: 0px;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: 400;
+  margin: 0px;
+  margin-top: 8px;
+  padding: 0px;
+}
+
+.buttonGroup {
+  margin-top: 24px;
+}
+
+.buttonRow {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0px;
+}
+
+.button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 16.9px;
+  font-weight: 700;
+  background-color: black;
+  border: none;
+  border-radius: 37px;
+  color: #fff;
+  min-width: 40px;
+  max-width: 80px;
+  min-height: 34px;
+  padding: 0 1.5em;
+  margin: 8px;
+}
+
+@media (max-width: 800px) {
+  .mainMenuImage {
+    height: 48px;
+    width: auto;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 200;
+  }
+
+  .wrapper {
+    display: grid;
+    padding-right: 80px;
+  }
+
+  .panel {
+    width: 100%;
+  }
+}

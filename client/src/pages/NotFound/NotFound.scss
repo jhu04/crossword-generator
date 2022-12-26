@@ -1,0 +1,41 @@
+h1 {
+  font-size: 48px;
+  line-height: 48px;
+  font-weight: 800;
+}
+
+h2 {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.bgText {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.bgText::after {
+  color: #000;
+  opacity: 0.15;
+  content: attr(txt);
+  display: block;
+  font-size: 360px;
+  font-weight: 800;
+  line-height: 360px;
+  letter-spacing: normal;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+}
+
+@media (max-width: 800px) {
+  .bgText::after {
+    font-size: 200px;
+    line-height: 200px;
+  }
+}

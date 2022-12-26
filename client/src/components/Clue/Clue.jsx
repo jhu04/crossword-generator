@@ -1,0 +1,74 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import classNames from 'classnames';
+
+import { clueRange } from 'utils/puzzle';
+import { clueClick } from 'reducers/puzzle';
+
+import css from './Clue.scss';
+
+
+class Clue extends React.Component {
+  render() {
+    const {isActiveClue, isActiveDirection, isFilled, clue, obscured} = this.props;
+
+    const clueClasses = classNames(css.clue, {
+      [css.clue_active]: isActiveClue && isActiveDirection,
+      [css.clue_selected]: isActiveClue && !isActiveDirection,
+      [css.clue_filled]: isFilled,
+    });
+
+    const clueValueClasses =classNames(css.clueValue, {
+      [css.clueValue_obscured]: obscured,
+    });
+
+    return (
+      <li className={clueClasses} onClick={this.props.clueClick} ref={this.props.clueRef}>
+        <span className={css.clueNumber}>{clue.clueNumber}</span>
+        <span className={clueValueClasses}>{clue.value}</span>
+      </li>
+    );
+  }
+}
+
+const mapStateToProps = (state, ownProps) => {
+  const {activeCellNumber, activeDirection, cells, clues, width} = state.puzzle[ownProps.puzzleId] || {};
+  const {clueNumber, direction} = ownProps;
+  if (['start', 'pause'].includes(state.modal.activeModal)) {
+    return {
+      clue: clues[direction][clueNumber],
+      obscured: true,
+    }
+  }
+  const activeCell = cells[activeCellNumber];
+  const activeClueNumber = activeCell.cellClues[direction];
+  const clue = clues[direction][clueNumber];
+  return {
+    isActiveClue: activeClueNumber === clueNumber,
+    isActiveDirection: activeDirection === direction,
+    isFilled: clueRange(clue, direction, width).every(cellNumber => cells[cellNumber].guess),
+    clue: clues[direction][clueNumber],
+    obscured: ['start', 'pause'].includes(state.modal.activeModal),
+  }
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    clueClick: (puzzleId, direction, clueNumber) => () => dispatch(clueClick(puzzleId, direction, clueNumber)),
+  }
+};
+
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  return {
+    ...stateProps,
+    ...dispatchProps,
+    ...ownProps,
+    clueClick: dispatchProps.clueClick(ownProps.puzzleId, ownProps.direction, ownProps.clueNumber),
+  }
+};
+
+const connectedClue = connect(mapStateToProps, mapDispatchToProps, mergeProps)(Clue);
+
+export {
+  connectedClue as Clue,
+};
