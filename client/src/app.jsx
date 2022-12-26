@@ -6,6 +6,7 @@ import {
   Redirect
 } from 'react-router-dom';
 import Axios from 'axios';
+import sample from 'lodash/sample';
 
 import Header from 'components/Header/Header';
 import Home from 'pages/Home/Home';
@@ -26,7 +27,7 @@ function App() {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
       .then((res) => {
         if (res.data.length) {
-          setSelectedCrossword(_.sample(res.data)._id);
+          setSelectedCrossword(sample(res.data)._id);
         }
       })
       .catch((err) => console.error(err.toJSON()));

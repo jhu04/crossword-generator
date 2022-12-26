@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import padStart from 'lodash/padStart';
 import classNames from 'classnames';
 import { connect } from 'react-redux';
 
@@ -15,7 +15,7 @@ class Timer extends React.Component {
     const minutes = Math.floor(timer / 60) % 60;
     const hours = Math.floor(timer / 60 / 60) % 60;
     const hoursDisplay = hours ? `${hours}:` : '';
-    const display = `${hoursDisplay}${minutes}:${_.padStart(seconds, 2, '0')}`;
+    const display = `${hoursDisplay}${minutes}:${padStart(seconds, 2, '0')}`;
 
     const timerContentClasses = classNames(css.timerContent, {
       [css.timerContent_paused]: paused,

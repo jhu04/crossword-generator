@@ -1,4 +1,6 @@
-import _ from 'lodash';
+import range from 'lodash/range';
+import keys from 'lodash/keys';
+import each from 'lodash/each';
 
 import { directions, across, down } from 'constants/clue';
 import { CODE_ARROW_RIGHT, CODE_ARROW_LEFT, CODE_ARROW_DOWN, CODE_ARROW_UP } from 'constants/keys';
@@ -16,7 +18,7 @@ const getStepSize = (direction, width, positive = true) => {
 
 export const clueRange = (clue, direction, width) => {
   const stepSize = getStepSize(direction, width);
-  return _.range(clue.clueStart, clue.clueEnd + stepSize, stepSize);
+  return range(clue.clueStart, clue.clueEnd + stepSize, stepSize);
 };
 
 const getNextCellNumber = (start, end, cells, direction, width, moveForward = true) => {
@@ -119,7 +121,7 @@ export const getRemoveGuessCellNumber = (activeCellNumber, activeDirection, cell
 };
 
 export const getMoveClueNumber = (activeCellNumber, activeDirection, cells, clues, width, defaultClues, forward) => {
-  const numClues = _.keys(clues[across]).length + _.keys(clues[down]).length;
+  const numClues = keys(clues[across]).length + keys(clues[down]).length;
 
   // move to the next empty cell
   let { newClue, newDirection } = getNextClue(activeCellNumber, activeDirection, cells, clues, width, defaultClues, forward);
@@ -261,7 +263,7 @@ export const getCellChange = (callback, cells, clues, width, activeCellNumber, a
     return changeCells(cellRange, cells, callback);
 
   } else if (option === PUZZLE) {
-    return changeCells(_.range(cells.length), cells, callback);
+    return changeCells(range(cells.length), cells, callback);
   }
 };
 
@@ -304,11 +306,11 @@ export const initializePuzzle = (puzzleObject) => {
     [down]: {}
   };
 
-  _.each(clues, (clueList, directionLetter) => {
+  each(clues, (clueList, directionLetter) => {
     let previousClue;
     const direction = directions[directionLetter];
 
-    _.each(clueList, clue => {
+    each(clueList, clue => {
       const cell = cells[clue.clueStart];
       clue.clueNumber = clue.clueNum;
       cell.clueStart = clue.clueNumber;

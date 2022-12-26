@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import map from 'lodash/map';
 import { connect } from 'react-redux';
 
 import { Clue } from 'components/Clue/Clue';
@@ -29,7 +29,7 @@ class ClueList extends React.Component {
           {direction}
         </div>
         <ol className={css.clueList} ref={list => { this.list = list }}>
-          {_.map(clues, (clue, clueNumberString) => {
+          {map(clues, (clue, clueNumberString) => {
             const clueNumber = Number(clueNumberString);
             return (
               <Clue

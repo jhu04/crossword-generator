@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import range from 'lodash/range';
 import { connect } from 'react-redux';
 
 import { Cell } from 'components/Cell/Cell';
@@ -15,9 +15,9 @@ class Grid extends React.Component {
       <div className={css.gridContainer}>
         <div className={css.gridContent}>
           <div className={css.gridInnerContent}>
-            {_.range(width).map(rowNumber => (
+            {range(width).map(rowNumber => (
               <div className={css.gridRow} key={rowNumber}>
-                {_.range(width).map((colNumber) => {
+                {range(width).map((colNumber) => {
                   const cellNumber = rowNumber * width + colNumber;
                   return (
                     <Cell

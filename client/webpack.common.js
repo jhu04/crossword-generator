@@ -64,7 +64,10 @@ module.exports = {
   plugins: [
     new dotenv(),
     new HtmlWebpackPlugin({
-      favicon: "./images/favicon.ico"
-    })
+      title: "Crossify",
+      template: "./template.html",
+      favicon: "./assets/favicon.ico",
+      inject: 'body',
+    }),
   ],
 };

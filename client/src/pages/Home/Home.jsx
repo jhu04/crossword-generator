@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 import css from './Home.scss'
-import calendarIcon from 'images/calendar.svg'
-import birdsflyingIcon from 'images/birdsflying.svg'
+import calendarIcon from 'assets/calendar.svg'
+import birdsflyingIcon from 'assets/birdsflying.svg'
 
 function Home({setFreeModeSize}) {
   const date = moment.utc();
