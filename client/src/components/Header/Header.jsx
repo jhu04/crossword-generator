@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from 'images/crossgen.png'
+import logo from 'images/crossify.png'
 import { GithubIcon } from 'components/Icons/GithubIcon';
 
 import css from './Header.scss';

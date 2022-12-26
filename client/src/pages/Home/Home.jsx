@@ -7,7 +7,8 @@ import calendarIcon from 'images/calendar.svg'
 import birdsflyingIcon from 'images/birdsflying.svg'
 
 function Home({setFreeModeSize}) {
-  console.log(setFreeModeSize);
+  const date = moment.utc();
+
   function FreeModeButton(freeModeSize) {
     return (
       <Link to={'/puzzle/free/redirect'}>
@@ -27,7 +28,7 @@ function Home({setFreeModeSize}) {
           <img src={calendarIcon} className={css.mainMenuImage} />
           <h1>The Daily</h1>
           <h2>
-            {moment().format('dddd') + ', ' + moment().format('LL')}
+            {date.format('dddd') + ', ' + date.format('LL')}
           </h2>
           <div className={css.buttonGroup}>
             <div className={css.buttonRow}>
