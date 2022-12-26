@@ -1,6 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname, 'src'),
@@ -46,6 +47,10 @@ module.exports = {
         ],
       },
     ],
+  },
+
+  optimization: {
+    minimizer: [new TerserPlugin()],
   },
 
   resolve: {
