@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import moment from 'moment';
+import utc from 'moment/moment';
 
 import css from './Home.scss'
 import calendarIcon from 'assets/calendar.svg'
 import birdsflyingIcon from 'assets/birdsflying.svg'
 
 function Home({setFreeModeSize}) {
-  const date = moment.utc();
+  const date = utc();
 
   function FreeModeButton(freeModeSize) {
     return (
