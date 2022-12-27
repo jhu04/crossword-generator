@@ -15,7 +15,7 @@ class ClueList extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.list) {
+    if (this.list && this.props.activeClueNumber) {
       this.list.scrollTop = this.clues[this.props.activeClueNumber].offsetTop - this.list.offsetTop;
     }
   }
