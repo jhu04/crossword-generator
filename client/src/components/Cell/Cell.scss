@@ -6,8 +6,8 @@
   box-sizing: border-box;
 }
 
-.cell_closed {
-  background-color: black;
+.solved {
+  color: #0858AA;
 }
 
 .cell_selected {
@@ -22,6 +22,15 @@
   background-color: #FFECA0;
 }
 
+.cell_obscured {
+  background-color: #daa7ff;
+  color: #daa7ff;
+}
+
+.cell_closed {
+  background-color: black;
+}
+
 .cell_wrong::after {
   transform: rotate(-45deg);
   position: absolute;
@@ -34,6 +43,7 @@
 }
 
 .number {
+  color: black;
   font-size: .7vw;
   padding: 5% 7% 0;
   position: absolute;
@@ -50,10 +60,6 @@
   bottom: 0;
   text-align: center;
   width: 100%;
-}
-
-.solved {
-  color: #0858AA;
 }
 
 .cheat {

@@ -38,6 +38,8 @@ import css from './Puzzle.scss';
 class Puzzle extends React.Component {
   constructor(props) {
     super(props);
+    props.setFreeModeSize(0);
+    props.setSelectedCrossword(null);
     this.state = {
       interval: null,
     }

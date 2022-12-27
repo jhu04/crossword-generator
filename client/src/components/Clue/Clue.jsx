@@ -10,7 +10,7 @@ import css from './Clue.scss';
 
 class Clue extends React.Component {
   render() {
-    const {isActiveClue, isActiveDirection, isFilled, clue, obscured} = this.props;
+    const { isActiveClue, isActiveDirection, isFilled, clue, obscured } = this.props;
 
     const clueClasses = classNames(css.clue, {
       [css.clue_active]: isActiveClue && isActiveDirection,
@@ -18,7 +18,7 @@ class Clue extends React.Component {
       [css.clue_filled]: isFilled,
     });
 
-    const clueValueClasses =classNames(css.clueValue, {
+    const clueValueClasses = classNames(css.clueValue, {
       [css.clueValue_obscured]: obscured,
     });
 
@@ -32,14 +32,15 @@ class Clue extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const {activeCellNumber, activeDirection, cells, clues, width} = state.puzzle[ownProps.puzzleId] || {};
-  const {clueNumber, direction} = ownProps;
+  const { activeCellNumber, activeDirection, cells, clues, width } = state.puzzle[ownProps.puzzleId] || {};
+  const { clueNumber, direction } = ownProps;
   if (['start', 'pause'].includes(state.modal.activeModal)) {
     return {
       clue: clues[direction][clueNumber],
       obscured: true,
     }
   }
+
   const activeCell = cells[activeCellNumber];
   const activeClueNumber = activeCell.cellClues[direction];
   const clue = clues[direction][clueNumber];
@@ -48,7 +49,7 @@ const mapStateToProps = (state, ownProps) => {
     isActiveDirection: activeDirection === direction,
     isFilled: clueRange(clue, direction, width).every(cellNumber => cells[cellNumber].guess),
     clue: clues[direction][clueNumber],
-    obscured: ['start', 'pause'].includes(state.modal.activeModal),
+    obscured: false,
   }
 };
 

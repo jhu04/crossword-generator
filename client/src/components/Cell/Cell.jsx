@@ -10,13 +10,14 @@ import css from './Cell.scss';
 
 class Cell extends React.Component {
   render() {
-    const { open, cheated, solved, revealed, active, selected, related } = this.props;
+    const { open, cheated, solved, revealed, active, selected, related, obscured } = this.props;
     const closed = !open;
 
     const squareClasses = classNames(css.cell, {
+      [css.cell_closed]: closed,
+      [css.cell_obscured]: obscured && this.props.guess,
       [css.cell_selected]: selected,
       [css.cell_active]: active,
-      [css.cell_closed]: closed,
       [css.cell_related]: related,
     });
 
@@ -69,6 +70,7 @@ const mapStateToProps = (state, ownProps) => {
     active: activeCellNumber === ownProps.cellNumber,
     selected: cellNumberInClue(ownProps.cellNumber, activeClue, activeDirection, width),
     related: getAnyRelated(ownProps.cellNumber, activeClue, clues, width),
+    obscured: state.modal.activeModal === 'pause',
     ...cells[ownProps.cellNumber],
   }
 };
