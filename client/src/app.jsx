@@ -23,6 +23,9 @@ function App() {
       ? process.env.SERVER_URL_PROD
       : process.env.SERVER_URL_DEV;
 
+  console.log('process.env.SERVER_URL_DEV', process.env.SERVER_URL_DEV);
+  console.log('process.env.SERVER_URL_PROD', process.env.SERVER_URL_PROD);
+
   useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
       .then((res) => {
@@ -44,8 +47,8 @@ function App() {
           </Route>
           <Route exact path="/puzzle/:puzzleId"
             render={(props) => (
-              <Puzzle 
-                setFreeModeSize={setFreeModeSize} 
+              <Puzzle
+                setFreeModeSize={setFreeModeSize}
                 setSelectedCrossword={setSelectedCrossword}
                 {...props}
               />
