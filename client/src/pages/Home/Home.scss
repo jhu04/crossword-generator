@@ -24,20 +24,20 @@
   width: auto;
 }
 
-h1 {
-  font-size: 32px;
-  font-weight: 500;
+.cardTitle {
+  font-size: 48px;
+  font-weight: 800;
   letter-spacing: -1.5px;
   margin: 0px;
   margin-top: 24px;
   padding: 0px;
 }
 
-h2 {
+.date {
   font-size: 16px;
   font-weight: 400;
   margin: 0px;
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 0px;
 }
 
@@ -67,7 +67,7 @@ h2 {
   border: none;
   border-radius: 37px;
   color: #fff;
-  min-width: 40px;
+  min-width: 60px;
   max-width: 80px;
   min-height: 34px;
   padding: 0 1.5em;
@@ -80,9 +80,14 @@ h2 {
     width: auto;
   }
 
-  h1 {
-    font-size: 24px;
-    font-weight: 200;
+  .cardTitle {
+    font-size: 32px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+
+  .buttonGroup {
+    margin-top: 12px;
   }
 
   .wrapper {
@@ -92,5 +97,10 @@ h2 {
 
   .panel {
     width: 100%;
+  }
+
+  .button {
+    padding: 0 0.5em;
+    margin: 6px;
   }
 }

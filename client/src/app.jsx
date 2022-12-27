@@ -33,10 +33,6 @@ function App() {
       .catch((err) => console.error(err.toJSON()));
   }, [freeModeSize]);
 
-  function RedirectedFreeMode() {
-    window.location.href = `/puzzle/${selectedCrossword}`;
-  }
-
   // TODO: update mini/, maxi/
   return (
     <Router>
@@ -46,15 +42,27 @@ function App() {
           <Route exact path="/">
             <Home setFreeModeSize={setFreeModeSize} />
           </Route>
-          <Route exact path="/puzzle/:puzzleId" component={Puzzle} />
+          <Route exact path="/puzzle/:puzzleId"
+            render={(props) => (
+              <Puzzle 
+                setFreeModeSize={setFreeModeSize} 
+                setSelectedCrossword={setSelectedCrossword}
+                {...props}
+              />
+            )}
+          />
           <Route exact path="/puzzle/daily/mini">
-            <Redirect to="/puzzle/63a7b79854254903cdd9410f" />
+            <Redirect to="/puzzle/63a97dc765e5479584855cbf" />
           </Route>
           <Route exact path="/puzzle/daily/maxi">
-            <Redirect to="/puzzle/63a7b79854254903cdd9410f" />
+            <Redirect to="/puzzle/63a97e2564ec9287d7ac5485" />
           </Route>
           <Route exact path="/puzzle/free/redirect">
-            {selectedCrossword ? <RedirectedFreeMode /> : <Loading />}
+            {
+              selectedCrossword
+                ? <Redirect to={`/puzzle/${selectedCrossword}`} />
+                : <Loading />
+            }
           </Route>
           <Route path="*" component={NotFound} />
         </Switch>
