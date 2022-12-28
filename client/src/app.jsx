@@ -23,6 +23,8 @@ function App() {
       ? process.env.REACT_APP_SERVER_URL_PROD
       : process.env.REACT_APP_SERVER_URL_DEV;
 
+  console.log(process.env.REACT_APP_SERVER_URL_PROD, process.env.REACT_APP_SERVER_URL_DEV);
+
   useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
       .then((res) => {
