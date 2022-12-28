@@ -20,10 +20,8 @@ function App() {
   const [selectedCrossword, setSelectedCrossword] = useState(null);
   const SERVER_URL =
     (process.env.NODE_ENV === 'production')
-      ? process.env.REACT_APP_SERVER_URL_PROD
-      : process.env.REACT_APP_SERVER_URL_DEV;
-
-  console.log(process.env.REACT_APP_SERVER_URL_PROD, process.env.REACT_APP_SERVER_URL_DEV);
+      ? 'https://crossify-server.vercel.app'
+      : 'http://localhost:5000'; // TODO: fix env variables in deployment
 
   useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
