@@ -12,10 +12,10 @@ class ActiveClue extends React.Component {
     const { activeClue, abbreviatedDirection, obscured } = this.props;
 
     const containerClasses = classNames(css.activeClueContainer, {
-      [css.activeClueContainer_obscured]: obscured
+      [css.activeClueContainer_obscured]: obscured || !activeClue
     });
 
-    if (obscured) {
+    if (obscured || !activeClue) {
       return <div className={containerClasses} />
     }
 
@@ -34,6 +34,8 @@ class ActiveClue extends React.Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { activeCellNumber, activeDirection, cells, clues } = state.puzzle[ownProps.puzzleId] || {};
+  // console.log(activeCellNumber, activeDirection, cells, clues);
+
   if (['start', 'pause'].includes(state.modal.activeModal)) {
     return {
       obscured: true,

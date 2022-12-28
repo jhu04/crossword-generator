@@ -18,15 +18,20 @@ class PuzzleHeader extends React.Component {
       author = `By ${author}`;
     }
 
+    const [year, month, day] = this.props.printDate.split("-");
+
     return (
       <div className={css.headerContainer}>
         <div>
-          <div className={css.title}>
-            <TitleDiv title={this.props.title} />
-          </div>
-          <div className={css.subtitle}>
+          <h1 className={css.title}>
+            {this.props.title}
+          </h1>
+          <h2 className={css.date}>
+            {month}/{day}/{year}
+          </h2>
+          <h3 className={css.byline}>
             {author}
-          </div>
+          </h3>
         </div>
       </div>
     )

@@ -70,12 +70,7 @@
   min-height: 34px;
   padding: 0 1.5em;
   margin-bottom: 4px;
-}
-
-.buttonBody:active {
-  margin-top: 4px;
-  margin-bottom: 0;
-  box-shadow: none;
+  cursor: pointer;
 }
 
 .congratulations {

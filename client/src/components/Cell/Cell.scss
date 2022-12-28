@@ -1,9 +1,10 @@
 .cell {
-  border: 1px solid dimgray;
+  border: 1px solid black;
   display: table-cell;
   background-color: white;
   position: relative;
   box-sizing: border-box;
+  align-items: center;
 }
 
 .solved {
@@ -23,12 +24,12 @@
 }
 
 .cell_obscured {
-  background-color: #daa7ff;
-  color: #daa7ff;
+  background-color: #7bed9f;
+  color: rgba(0, 0, 0, 0);
 }
 
 .cell_closed {
-  background-color: black;
+  background-color: #1e272e;
 }
 
 .cell_wrong::after {
@@ -44,7 +45,7 @@
 
 .number {
   color: black;
-  font-size: .7vw;
+  font-size: 1vw;
   padding: 5% 7% 0;
   position: absolute;
   top: 0;
@@ -57,7 +58,6 @@
   line-height: 1.8vw;
   cursor: default;
   position: absolute;
-  bottom: 0;
   text-align: center;
   width: 100%;
 }

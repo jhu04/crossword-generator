@@ -13,8 +13,8 @@
 .playArea {
   padding: 10px;
   display: flex;
-  justify-content: space-between;
   position: relative;
+  justify-content: center;
 }
 
 .currentClue {
@@ -30,6 +30,7 @@
 .gridContainer {
   position: sticky;
   top: 56px;
+  right: 24px;
 }
 
 .cluesContainer {

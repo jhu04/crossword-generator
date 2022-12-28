@@ -283,6 +283,7 @@ export const getClearCells = (cells, clues, width, activeCellNumber, activeDirec
 export const initializePuzzle = (puzzleObject) => {
   const { layout, answers, clues } = puzzleObject.puzzle_data;
   const { width } = puzzleObject.puzzle_meta;
+
   let availableCells = 0;
   const cells = layout.map((cell, index) => {
     if (cell) {
@@ -306,6 +307,8 @@ export const initializePuzzle = (puzzleObject) => {
     [down]: {}
   };
 
+  let startCellNumber = 0;
+
   each(clues, (clueList, directionLetter) => {
     let previousClue;
     const direction = directions[directionLetter];
@@ -314,6 +317,10 @@ export const initializePuzzle = (puzzleObject) => {
       const cell = cells[clue.clueStart];
       clue.clueNumber = clue.clueNum;
       cell.clueStart = clue.clueNumber;
+
+      if (clue.clueNumber === 1 && direction === across) {
+        startCellNumber = clue.clueStart;
+      }
 
       if (previousClue) {
         previousClue.nextClueNumber = clue.clueNumber;
@@ -340,7 +347,7 @@ export const initializePuzzle = (puzzleObject) => {
     width,
     defaultClues,
     clues: cluesByNumber,
-    activeCellNumber: 0,
+    activeCellNumber: startCellNumber,
     activeDirection: across,
     puzzleMeta: puzzleObject.puzzle_meta,
     timer: 0,
