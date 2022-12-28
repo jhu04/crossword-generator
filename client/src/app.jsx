@@ -20,10 +20,8 @@ function App() {
   const [selectedCrossword, setSelectedCrossword] = useState(null);
   const SERVER_URL =
     (process.env.NODE_ENV === 'production')
-      ? process.env.SERVER_URL_PROD
-      : process.env.SERVER_URL_DEV;
-
-  console.log(process.env.NODE_ENV, process.env.SERVER_URL_PROD, process.env.SERVER_URL_DEV);
+      ? process.env.REACT_APP_SERVER_URL_PROD
+      : process.env.REACT_APP_SERVER_URL_DEV;
 
   useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
