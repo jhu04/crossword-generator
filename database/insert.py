@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 import bson
 import bson.json_util
-from database.documents import CrosswordBuilder
+from database.documents import CrosswordBuilder, PublishType
 from tests.test_grid import test_clues, test_grid_layout_generation
 
 load_dotenv()
@@ -26,18 +26,19 @@ def to_bson(obj):
 
 
 def main():
-    n = 9
+    n = 15
+    publish_type = PublishType.FAKE
 
     clue_processor = test_clues(verbose=False)
     grid = test_grid_layout_generation(n, verbose=False)
-    grid.fill(clue_processor, num_attempts=10, num_sample_strings=1000, num_test_strings=5,
+    grid.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5,
               verbosity=0.001)  # TODO: find optimal num_test_strings, 10 seems good?
     print('Generated grid:')
     print(grid)
     print()
 
     if grid.is_filled():
-        generated_crossword = CrosswordBuilder(grid, clue_processor).build()
+        generated_crossword = CrosswordBuilder(grid, clue_processor, publish_type).build()
         with MongoClient(MONGODB_URI, tlsAllowInvalidCertificates=True) as client:
             db = client.puzzles
             all_collection = db.all

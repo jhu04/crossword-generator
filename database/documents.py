@@ -1,7 +1,11 @@
 from collections.abc import Collection
 from dataclasses import dataclass, field
 import datetime
+from enum import Enum
 from random import randrange
+import re
+from typing import ClassVar
+
 from crossword_generator.clue_processor import ClueProcessor
 from crossword_generator.grid import Grid, Cell, Direction
 
@@ -57,33 +61,51 @@ class Crossword:
         self.print_date = self.puzzle_meta.printDate
 
 
+@dataclass()
+class PublishType(Enum):
+    DAILY: str = 'Daily'
+    FREE: str = 'Free'
+    FAKE: str = 'Fake'
+
+
 @dataclass(frozen=True)
 class CrosswordBuilder:
+    INVALID_CLUE_CONTENT: ClassVar[re.Pattern] = re.compile(r'\d+-(across|down)', re.I)
+
     grid: Grid
     clue_processor: ClueProcessor
+    publish_type: PublishType
+
+    def __post_init__(self):
+        if self.publish_type is PublishType.DAILY:
+            assert self.grid.n == 5 or self.grid.n == 11
 
     def cell_to_index(self, cell: Cell):
         return self.grid.n * (cell.row - 1) + (cell.col - 1)
 
     def get_clues(self) -> Clues:
-        A = []
-        D = []
+        a = []
+        d = []
 
         for entry in self.grid.entries:
             df = self.clue_processor.clues
             contents = df[df.answer == entry.get_contents()]
+
+            while (value := contents.iloc[randrange(0, len(contents))]['clue']) and self.INVALID_CLUE_CONTENT.search(value):
+                pass
+
             clue = Clue(
                 clueStart=self.cell_to_index(entry.cells[0]),
                 clueNum=entry.id,
                 clueEnd=self.cell_to_index(entry.cells[-1]),
-                value=contents.iloc[randrange(0, len(contents))]['clue']
+                value=value
             )
 
             if entry.direction is Direction.ACROSS:
-                A.append(clue)
+                a.append(clue)
             else:
-                D.append(clue)
-        return Clues(A=A, D=D)
+                d.append(clue)
+        return Clues(A=a, D=d)
 
     def get_layout(self) -> list[int, ...]:
         layout = []
@@ -108,8 +130,8 @@ class CrosswordBuilder:
             version=1,
             puzzle_meta=PuzzleMetadata(
                 formatType=None,
-                publishType='Free',
-                title=f'Free {today}',  # TODO: better title?
+                publishType=self.publish_type.value,
+                title=f'The Daily {"Mini" if self.grid.n == 5 else "Maxi"}' if self.publish_type is PublishType.DAILY else 'Free Mode',
                 printDate=today,
                 printDotw=None,
                 editor=None,

@@ -68,7 +68,7 @@ class Grid:
         MAX_WALL = int(0.17 * self.n ** 2 + 0.066 * self.n - 1.1)
         MAX_WORDS = int(0.34 * self.n ** 2 - 0.3 * self.n + 4)
         MIN_WORD_LENGTH = 3
-        SYMMETRIC_SIZES = (11, 12, 13, 14, 15)
+        SYMMETRIC_SIZES = set(range(100))
 
         curr_wall = 0
         curr_words = 2 * self.n
