@@ -2,10 +2,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 import random
-from functools import cache, lru_cache
+from functools import lru_cache
 from typing import ClassVar
 
 from crossword_generator.clue_processor import ClueProcessor
+import crossword_generator.constants as const
 
 
 @dataclass()
@@ -41,7 +42,8 @@ class Grid:
 
     def __init__(self, n, set_layout=True):
         self.n = n
-        self.grid = tuple(tuple(Cell(self, r, c) for c in range(n + 2)) for r in range(n + 2))
+        self.grid = tuple(tuple(Cell(self, r, c)
+                          for c in range(n + 2)) for r in range(n + 2))
         for i in range(self.n + 2):
             self.grid[i][0].make_wall()
             self.grid[i][self.n + 1].make_wall()
@@ -67,10 +69,8 @@ class Grid:
         adding walls that satisfy these requirements."""
 
         # TODO: make cleaner bounds
-        MAX_WALL = int(0.17 * self.n ** 2 + 0.066 * self.n - 1.1)
+        MAX_WALL = int(self.n ** 2 / 6)
         MAX_WORDS = int(0.34 * self.n ** 2 - 0.3 * self.n + 4)
-        MIN_WORD_LENGTH = 3
-        SYMMETRIC_SIZES = (11, 12, 13, 14, 15)
 
         curr_wall = 0
         curr_words = 2 * self.n
@@ -98,18 +98,18 @@ class Grid:
             available_cells.remove((r, c))
 
         illegal_cells = []
-        if self.n in SYMMETRIC_SIZES and self.n % 2 == 1:
-            for i in range(int(-(MIN_WORD_LENGTH + 1) / 2), int((MIN_WORD_LENGTH + 1) / 2)):
+        if self.n in const.SYMMETRIC_SIZES and self.n % 2 == 1:
+            for i in range(int(-(const.MIN_WORD_LENGTH + 1) / 2), int((const.MIN_WORD_LENGTH + 1) / 2)):
                 illegal_cells.append((i + (self.n + 1) / 2, (self.n + 1) / 2))
                 illegal_cells.append(((self.n + 1) / 2, i + (self.n + 1) / 2))
 
         while curr_wall < MAX_WALL and curr_words < MAX_WORDS:
             r, c = available_cells[random.randint(0, len(available_cells) - 1)]
             if all(self.cell(r, c).get_neighbor(dir).is_wall()
-                   or len(self.cell(r, c).in_direction(dir)) > MIN_WORD_LENGTH for dir in Cardinal):
+                   or len(self.cell(r, c).in_direction(dir)) > const.MIN_WORD_LENGTH for dir in Cardinal):
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
-                    if self.n in SYMMETRIC_SIZES:
+                    if self.n in const.SYMMETRIC_SIZES:
                         add_wall(self.n + 1 - r, self.n + 1 - c)
 
     def number_cells(self) -> None:
@@ -125,12 +125,14 @@ class Grid:
                     is_entry = True
                     self.across[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
-                    self.entries.append(Entry(self, self.cell(r, c).get_across()))
+                    self.entries.append(
+                        Entry(self, self.cell(r, c).get_across()))
                 if self.cell(r, c).get_neighbor(Cardinal.NORTH).is_wall():
                     is_entry = True
                     self.down[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
-                    self.entries.append(Entry(self, self.cell(r, c).get_down()))
+                    self.entries.append(
+                        Entry(self, self.cell(r, c).get_down()))
                 if is_entry:
                     identifier += 1
         self.entries.sort(key=lambda e: -e.length)
@@ -169,7 +171,8 @@ class Grid:
         @lru_cache(maxsize=None)
         def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]):
             return tuple(
-                intersection(tuple(clue_processor.words[length][constraint] for constraint in constraints))
+                intersection(
+                    tuple(clue_processor.words[length][constraint] for constraint in constraints))
                 if len(constraints) > 0 else clue_processor.words[length]['all']
             )
 
@@ -182,10 +185,11 @@ class Grid:
             Returns:
                 A tuple of all possible words that fit the constraints of the entry.
             """
-            constraints = tuple((i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
+            constraints = tuple((i, entry.cells[i].label) for i in range(
+                entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
 
-        def helper(grid: Grid, entries: tuple[Entry, ...] | list[Entry, ...]) -> None:
+        def helper(grid: Grid, entries: tuple[Entry, ...] | list[Entry]) -> None:
             """Fills in one word at a time, proceeding by DFS. TODO: set to list cast is slow!"""
 
             # TODO: memoize get_across(), get_down() after layout is set
@@ -208,7 +212,8 @@ class Grid:
             # process word candidates for next entry
             entry = entries[0]
             candidates = get_candidates(entry)
-            words = random.sample(candidates, min(num_sample_strings, len(candidates)))
+            words = random.sample(candidates, min(
+                num_sample_strings, len(candidates)))
 
             # calculate heuristics for each word
             heuristic_scores: list[tuple[int, str]] = []
@@ -225,7 +230,8 @@ class Grid:
                         entry.cells[i].label = word[i]
 
                     # calculate heuristic score
-                    orthogonal = Entry(grid, entry.cells[i].get_entry_list(entry.direction.opposite()))
+                    orthogonal = Entry(grid, entry.cells[i].get_entry_list(
+                        entry.direction.opposite()))
                     heuristic_score *= len(get_candidates(orthogonal))
                     if heuristic_score == 0:  # optimization
                         break
@@ -285,7 +291,8 @@ class Cell:
     label: str = BLANK
 
     def __post_init__(self):
-        self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)  # allow memoization without memory leaks
+        # allow memoization without memory leaks
+        self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)
 
     def get_neighbor(self, cardinal_direction: Cardinal) -> Cell:
         return self.grid.cell(self.row + cardinal_direction.value.row, self.col + cardinal_direction.value.col)
@@ -299,24 +306,27 @@ class Cell:
     def make_wall(self) -> None:
         self.label = Cell.WALL
 
-    def get_across(self) -> list[Cell, ...]:
+    def get_across(self) -> list[Cell]:
         """Across array of Cells containing self"""
-        res = self.in_direction(Cardinal.WEST)[:0:-1]  # cells in left direction
+        res = self.in_direction(Cardinal.WEST)[
+            :0:-1]  # cells in left direction
         res.append(self)
-        res.extend(self.in_direction(Cardinal.EAST)[1:])  # cells in right direction
+        res.extend(self.in_direction(Cardinal.EAST)
+                   [1:])  # cells in right direction
         return res
 
-    def get_down(self) -> list[Cell, ...]:
+    def get_down(self) -> list[Cell]:
         """Down array of Cells containing self"""
         res = self.in_direction(Cardinal.NORTH)[:0:-1]  # cells in up direction
         res.append(self)
-        res.extend(self.in_direction(Cardinal.SOUTH)[1:])  # cells in down direction
+        res.extend(self.in_direction(Cardinal.SOUTH)
+                   [1:])  # cells in down direction
         return res
 
-    def get_entry_list(self, direction: Direction) -> list[Cell, ...]:
+    def get_entry_list(self, direction: Direction) -> list[Cell]:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
-    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell, ...]:
+    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell]:
         """Returns a list of cells starting at self (inclusive) until hitting a wall.
 
         Only used internally (for get_across and get_down).

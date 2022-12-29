@@ -1,10 +1,12 @@
-from crossword_generator.clue_processor import ClueProcessor
+import os
+import crossword_generator.constants as const
+from crossword_generator.clue_processor import CollectiveClueProcessor
 from crossword_generator.grid import Grid
 
 
 def test_grid_layout_generation(size, verbose=True):
     if verbose:
-        for n in range(4, 16):
+        for n in const.SIZE_RANGE:
             print(f"n = {n}\n{Grid(n)}\n")
 
     g = Grid(size)
@@ -21,10 +23,13 @@ def test_grid_layout_generation(size, verbose=True):
 
 
 def test_clues(verbose=True):
-    clue_processor = ClueProcessor('crossword-generator/data/clues.csv')
-    print('Done processing clues')
+    for source in const.CLUE_SOURCES:
+        source['path'] = os.path.join(const.DATA_ROOT, source['file_name'])
+
+    clue_processor = CollectiveClueProcessor(const.CLUE_SOURCES, verbose)
     if verbose:
-        print(clue_processor.words[3])
+        print(clue_processor.clues.len.value_counts())
+        print(clue_processor.words[const.MIN_WORD_LENGTH])
     return clue_processor
 
 
@@ -37,11 +42,9 @@ def main():
         for i in range(1):
             print(f'Processing grid {i}')
 
-            # test layout generation
             g = test_grid_layout_generation(11, verbose=False)
-
-            # test fill
-            g.fill(clue_processor, num_attempts=10, num_sample_strings=1000, num_test_strings=10, verbosity=0.005)
+            g.fill(clue_processor, num_attempts=10, num_sample_strings=1000,
+                   num_test_strings=10, verbosity=0.005)
 
             print(f'Processed grid {i}')
             print('Final grid:')
@@ -50,7 +53,8 @@ def main():
 
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
-    stats.dump_stats(filename='crossword-generator/tests/results/crossword_generation.prof')
+    stats.dump_stats(
+        filename='crossword-generator/tests/results/crossword_generation.prof')
 
     print(g)
 
