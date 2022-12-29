@@ -3,8 +3,13 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 import random
 from functools import lru_cache
+<<<<<<< HEAD
 from typing import ClassVar
 
+=======
+from typing import ClassVar, Final
+from collections.abc import Sequence
+>>>>>>> origin/fill-grid
 from crossword_generator.clue_processor import ClueProcessor
 import crossword_generator.constants as const
 
@@ -26,8 +31,6 @@ class Cardinal(Enum):
     EAST = Position(0, 1)
     WEST = Position(0, -1)
 
-    value: Position
-
 
 class Direction(Enum):
     ACROSS = auto()
@@ -38,7 +41,7 @@ class Direction(Enum):
 
 
 class Grid:
-    """1-indexed N x N grid of Cells"""
+    """1-indexed n x n grid of Cells"""
 
     def __init__(self, n, set_layout=True):
         self.n = n
@@ -71,6 +74,11 @@ class Grid:
         # TODO: make cleaner bounds
         MAX_WALL = int(self.n ** 2 / 6)
         MAX_WORDS = int(0.34 * self.n ** 2 - 0.3 * self.n + 4)
+<<<<<<< HEAD
+=======
+        MIN_WORD_LENGTH = 3
+        SYMMETRIC_SIZES = set(range(100))
+>>>>>>> origin/fill-grid
 
         curr_wall = 0
         curr_words = 2 * self.n
@@ -105,8 +113,15 @@ class Grid:
 
         while curr_wall < MAX_WALL and curr_words < MAX_WORDS:
             r, c = available_cells[random.randint(0, len(available_cells) - 1)]
+<<<<<<< HEAD
             if all(self.cell(r, c).get_neighbor(dir).is_wall()
                    or len(self.cell(r, c).in_direction(dir)) > const.MIN_WORD_LENGTH for dir in Cardinal):
+=======
+            if all(self.cell(r, c).get_neighbor(cardinal_direction).is_wall()
+                   or len(self.cell(r, c).in_direction(cardinal_direction)) > MIN_WORD_LENGTH
+                   for cardinal_direction in Cardinal
+                   ):
+>>>>>>> origin/fill-grid
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
                     if self.n in const.SYMMETRIC_SIZES:
@@ -150,7 +165,8 @@ class Grid:
         Args:
             clue_processor: The clue processor.
             num_attempts: Number of times grid tries filling from scratch.
-            num_sample_strings: Number of strings to sample per entry. A subset of this sample will be taken for testing.
+            num_sample_strings: Number of strings to sample per entry. A subset of this sample will be taken for
+                testing.
             num_test_strings: Number of strings grid tests per entry.
             verbosity: Proportion of the time things will print.
 
@@ -159,24 +175,31 @@ class Grid:
         """
 
         res: Grid | None = None
+        used_words = set()
         counter = 0
         print_every = int(1 / verbosity) if verbosity else 0
 
-        def intersection(sets: tuple[set, ...]):
+        def intersection(sets: tuple[set[str], ...]) -> set[str]:
             if len(sets) == 1:
                 return sets[0]
             return sets[0].intersection(*sets[1:])
 
         # TODO: make faster
         @lru_cache(maxsize=None)
+<<<<<<< HEAD
         def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]):
             return tuple(
                 intersection(
                     tuple(clue_processor.words[length][constraint] for constraint in constraints))
+=======
+        def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]) -> set[str]:
+            return (
+                intersection(tuple(clue_processor.words[length][constraint] for constraint in constraints))
+>>>>>>> origin/fill-grid
                 if len(constraints) > 0 else clue_processor.words[length]['all']
             )
 
-        def get_candidates(entry: Entry) -> tuple[str, ...]:
+        def get_candidates(entry: Entry) -> set[str]:
             """Returns a tuple of all possible words that fit the constraints of the entry.
 
             Args:
@@ -211,15 +234,21 @@ class Grid:
 
             # process word candidates for next entry
             entry = entries[0]
+<<<<<<< HEAD
             candidates = get_candidates(entry)
             words = random.sample(candidates, min(
                 num_sample_strings, len(candidates)))
+=======
+            candidates = tuple(get_candidates(entry))
+            words = random.sample(candidates, min(num_sample_strings, len(candidates)))
+>>>>>>> origin/fill-grid
 
-            # calculate heuristics for each word
+            # compute heuristics for each word
             heuristic_scores: list[tuple[int, str]] = []
-
-            # compute heuristics
             for word in words:
+                if word in used_words:
+                    continue
+
                 previously_blank_cells = []
                 heuristic_score = 1
 
@@ -252,12 +281,14 @@ class Grid:
                     if entry.cells[i].label == Cell.BLANK:
                         previously_blank_cells.append(entry.cells[i])
                         entry.cells[i].label = word[i]
+                used_words.add(word)
 
                 helper(grid, entries[1:])
 
                 # backtrack
                 for cell in previously_blank_cells:
                     cell.label = Cell.BLANK
+                used_words.remove(word)
 
         for _ in range(num_attempts):
             helper(self, self.entries)
@@ -277,18 +308,16 @@ class Grid:
         return '\n'.join(' '.join(self.cell(i, j).label for j in range(1, self.n + 1)) for i in range(1, self.n + 1))
 
 
-# TODO: eq is set to False to allow hashing of Cell and thus allow get_entry_list to be cached. Refactor to not have to
-#  set eq to False
-@dataclass(eq=False)
+@dataclass(unsafe_hash=True)
 class Cell:
     # WARNING: Cell.BLANK and Cell.WALL are NOT Cells!
     BLANK: ClassVar[str] = "."
     WALL: ClassVar[str] = "#"
 
-    grid: Grid
-    row: int
-    col: int
-    label: str = BLANK
+    grid: Final[Grid] = field(hash=True)
+    row: Final[int] = field(hash=True)
+    col: Final[int] = field(hash=True)
+    label: str = field(default=BLANK, hash=False)
 
     def __post_init__(self):
         # allow memoization without memory leaks
@@ -345,7 +374,7 @@ class Cell:
 @dataclass()
 class Entry:
     grid: Grid
-    cells: tuple[Cell] | list[Cell]
+    cells: Sequence[Cell]
     length: int = field(init=False)
     direction: Direction = field(init=False)
     id: int = field(init=False)
@@ -353,13 +382,19 @@ class Entry:
     def __post_init__(self):
         self.length = len(self.cells)
 
-        # TODO: fix possible bug if len < 1
-        self.direction = Direction.ACROSS if self.cells[0].row == self.cells[1].row else Direction.DOWN
+        # TODO: fix possible bug if len(self.cells) <= 1
+        self.direction = Direction.ACROSS if len(self.cells) >= 2 and self.cells[0].row == self.cells[
+            1].row else Direction.DOWN
 
         self.id = self.grid.ids[(self.cells[0].row, self.cells[0].col)]
 
     def positions(self) -> tuple[Position]:
+        """Returns a tuple of Positions corresponding to the cells in this entry."""
+        # TODO: memoize
         return tuple(Position(c.row, c.col) for c in self.cells)
+
+    def get_contents(self) -> str:
+        return ''.join(c.label for c in self.cells)
 
     def __repr__(self):
         return f"{self.id}-{self.direction.value}"
