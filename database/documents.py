@@ -33,15 +33,15 @@ class Clue:
 
 @dataclass(frozen=True)
 class Clues:
-    A: Collection[Clue, ...]
-    D: Collection[Clue, ...]
+    A: Collection[Clue]
+    D: Collection[Clue]
 
 
 @dataclass(frozen=True)
 class PuzzleData:
     clues: Clues
-    layout: Collection[int, ...]
-    answers: Collection[str | None, ...]
+    layout: Collection[int]
+    answers: Collection[str | None]
 
 
 @dataclass()
@@ -107,14 +107,14 @@ class CrosswordBuilder:
                 d.append(clue)
         return Clues(A=a, D=d)
 
-    def get_layout(self) -> list[int, ...]:
+    def get_layout(self) -> list[int]:
         layout = []
         for r in range(1, self.grid.n + 1):
             for c in range(1, self.grid.n + 1):
                 layout.append(0 if self.grid.cell(r, c).is_wall() else 1)
         return layout
 
-    def get_answers(self) -> list[str, ...]:
+    def get_answers(self) -> list[str]:
         answers = []
         for r in range(1, self.grid.n + 1):
             for c in range(1, self.grid.n + 1):
@@ -123,6 +123,7 @@ class CrosswordBuilder:
 
     def build(self) -> Crossword:
         today = datetime.date.today().strftime('%Y-%m-%d')
+        
 
         return Crossword(
             puzzle_id=None,

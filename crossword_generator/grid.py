@@ -3,13 +3,8 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 import random
 from functools import lru_cache
-<<<<<<< HEAD
-from typing import ClassVar
+from typing import ClassVar, Final, Sequence
 
-=======
-from typing import ClassVar, Final
-from collections.abc import Sequence
->>>>>>> origin/fill-grid
 from crossword_generator.clue_processor import ClueProcessor
 import crossword_generator.constants as const
 
@@ -74,11 +69,6 @@ class Grid:
         # TODO: make cleaner bounds
         MAX_WALL = int(self.n ** 2 / 6)
         MAX_WORDS = int(0.34 * self.n ** 2 - 0.3 * self.n + 4)
-<<<<<<< HEAD
-=======
-        MIN_WORD_LENGTH = 3
-        SYMMETRIC_SIZES = set(range(100))
->>>>>>> origin/fill-grid
 
         curr_wall = 0
         curr_words = 2 * self.n
@@ -113,15 +103,9 @@ class Grid:
 
         while curr_wall < MAX_WALL and curr_words < MAX_WORDS:
             r, c = available_cells[random.randint(0, len(available_cells) - 1)]
-<<<<<<< HEAD
             if all(self.cell(r, c).get_neighbor(dir).is_wall()
-                   or len(self.cell(r, c).in_direction(dir)) > const.MIN_WORD_LENGTH for dir in Cardinal):
-=======
-            if all(self.cell(r, c).get_neighbor(cardinal_direction).is_wall()
-                   or len(self.cell(r, c).in_direction(cardinal_direction)) > MIN_WORD_LENGTH
-                   for cardinal_direction in Cardinal
-                   ):
->>>>>>> origin/fill-grid
+                   or len(self.cell(r, c).in_direction(cardinal_dir)) > const.MIN_WORD_LENGTH 
+                   for cardinal_dir in Cardinal):
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
                     if self.n in const.SYMMETRIC_SIZES:
@@ -186,16 +170,9 @@ class Grid:
 
         # TODO: make faster
         @lru_cache(maxsize=None)
-<<<<<<< HEAD
-        def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]):
-            return tuple(
-                intersection(
-                    tuple(clue_processor.words[length][constraint] for constraint in constraints))
-=======
         def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]) -> set[str]:
             return (
                 intersection(tuple(clue_processor.words[length][constraint] for constraint in constraints))
->>>>>>> origin/fill-grid
                 if len(constraints) > 0 else clue_processor.words[length]['all']
             )
 
@@ -234,14 +211,8 @@ class Grid:
 
             # process word candidates for next entry
             entry = entries[0]
-<<<<<<< HEAD
-            candidates = get_candidates(entry)
-            words = random.sample(candidates, min(
-                num_sample_strings, len(candidates)))
-=======
             candidates = tuple(get_candidates(entry))
             words = random.sample(candidates, min(num_sample_strings, len(candidates)))
->>>>>>> origin/fill-grid
 
             # compute heuristics for each word
             heuristic_scores: list[tuple[int, str]] = []
