@@ -1,0 +1,85 @@
+.cell {
+  border: 1px solid black;
+  display: table-cell;
+  background-color: white;
+  position: relative;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.solved {
+  color: #0858AA;
+}
+
+.cell_selected {
+  background-color: #A7D8FF;
+}
+
+.cell_active {
+  background-color: #FFDA00;
+}
+
+.cell_related {
+  background-color: #FFECA0;
+}
+
+.cell_obscured {
+  background-color: #7bed9f;
+  color: rgba(0, 0, 0, 0);
+}
+
+.cell_closed {
+  background-color: #1e272e;
+}
+
+.cell_wrong::after {
+  transform: rotate(-45deg);
+  position: absolute;
+  border-top: 2px solid #F23F00;
+  content: '';
+  height: 1px;
+  left: -22.5%;
+  top: 50%;
+  width: 141.42136%;
+}
+
+.number {
+  color: black;
+  font-size: 1vw;
+  padding: 5% 7% 0;
+  position: absolute;
+  top: 0;
+  line-height: 8px;
+  box-sizing: border-box;
+}
+
+.guess {
+  font-size: 1.8vw;
+  line-height: 1.8vw;
+  cursor: default;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+}
+
+.cheat {
+  border-color: transparent;
+  border-style: solid none none solid;
+  right: 0;
+  border-top-color: black;
+  border-width: .6vw;
+  position: absolute;
+}
+
+.revealed {
+  border-top-color: #F23F00;
+}
+
+.tatter {
+  background-color: white;
+  border: .1vw solid white;
+  border-radius: 50%;
+  position: absolute;
+  right: 1px;
+  top: -.5vw;
+}

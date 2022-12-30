@@ -186,7 +186,7 @@ class Grid:
             constraints = tuple((i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
 
-        def helper(grid: Grid, entries: list[Entry, ...]) -> Entry | None:
+        def helper(grid: Grid, entries: list[Entry]) -> Entry | None:
             """Fills in one word at a time, proceeding by DFS.
 
             Returns:
@@ -317,24 +317,24 @@ class Cell:
     def make_wall(self) -> None:
         self.label = Cell.WALL
 
-    def get_across(self) -> list[Cell, ...]:
+    def get_across(self) -> list[Cell]:
         """Across array of Cells containing self, ordered from left to right"""
         res = self.in_direction(Cardinal.WEST)[:0:-1]  # cells in left direction
         res.append(self)
         res.extend(self.in_direction(Cardinal.EAST)[1:])  # cells in right direction
         return res
 
-    def get_down(self) -> list[Cell, ...]:
+    def get_down(self) -> list[Cell]:
         """Down array of Cells containing self, ordered from top to bottom"""
         res = self.in_direction(Cardinal.NORTH)[:0:-1]  # cells in up direction
         res.append(self)
         res.extend(self.in_direction(Cardinal.SOUTH)[1:])  # cells in down direction
         return res
 
-    def get_entry_list(self, direction: Direction) -> list[Cell, ...]:
+    def get_entry_list(self, direction: Direction) -> list[Cell]:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
-    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell, ...]:
+    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell]:
         """Returns a list of cells starting at self (inclusive) until hitting a wall.
 
         Only used internally (for get_across and get_down).

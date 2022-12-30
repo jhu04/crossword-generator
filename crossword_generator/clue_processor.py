@@ -39,28 +39,30 @@ class ClueProcessor:
     TODO: currently only processes words for which there exists an associated
     old clue. update this if/when we generate clues ourselves.
     """
-    CLEANED_SUFFIX = '-cleaned'
-
     def __init__(self, path, filter=lambda row: True, delimiter=',', verbose=True):
         print('Processing:', path)
 
         clues = pd.read_csv(path, sep=delimiter, encoding='ISO-8859-1', engine='python').dropna()
-        if ClueProcessor.CLEANED_SUFFIX not in path:
+        if const.CLEANED_SUFFIX not in path:
             # TODO: make this readable
-            re = r'\d+(?:(?:A|D)|(?:-(?:Across|Down)))'
+            re_clue = r'\d+(?:(?:A|D)|(?:-(?:Across|Down)))'
+            re_answer = r'([A-Z])\1{3,}'
+            braces = [('\"', '\"'), ('(', ')'), ('[', ']')]
+
             clues = clues[clues.apply(filter, axis=1)][['clue', 'answer']]
             clues['clue'] = clues['clue'].astype(str) \
                 .apply(lambda s: s.replace('\"\"', '\"').strip()) \
-                .apply(lambda s: s[1:-1] if s[0] == s[-1] == '\"' else s)
+                .apply(lambda s: s[1:-1] if (s[0], s[-1]) in braces else s)
             clues['answer'] = clues['answer'].astype(str) \
                 .apply(lambda s: s.replace(" ", "").replace("-", "").strip().upper())
             clues = clues[clues['answer'].str.contains(r'^[A-Z]*$')]
             clues['len'] = clues['answer'].apply(lambda s: len(s))
             clues = clues[clues['len'].isin(const.WORD_LENGTH_RANGE)]
-            clues = clues[~clues['clue'].str.contains(re)]
+            clues = clues[~clues['clue'].str.contains(re_clue)]
+            clues = clues[(~clues['answer'].str.contains(re_answer)) | (clues['answer'].isin(const.WHITELIST))]
 
             root, ext = os.path.splitext(path)
-            clues.to_csv(root + ClueProcessor.CLEANED_SUFFIX + ext, sep=delimiter)
+            clues.to_csv(root + const.CLEANED_SUFFIX + ext, sep=delimiter)
 
         if verbose:
             print('Done processing clues')
