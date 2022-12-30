@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 import random
-from functools import lru_cache
+from functools import lru_cache, cache
 from typing import ClassVar, Final
 from collections.abc import Sequence
 from crossword_generator.clue_processor import ClueProcessor
@@ -187,9 +187,13 @@ class Grid:
             constraints = tuple((i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
 
-        def helper(grid: Grid, entries: tuple[Entry, ...] | list[Entry, ...]) -> None:
-            """Fills in one word at a time, proceeding by DFS. TODO: set to list cast is slow!"""
+        def helper(grid: Grid, entries: list[Entry, ...]) -> Entry | None:
+            """Fills in one word at a time, proceeding by DFS.
 
+            Returns:
+                An entry that failed to be filled, or None if all entries were filled.
+            """
+            # TODO: set to list cast is slow!
             # TODO: memoize get_across(), get_down() after layout is set
 
             nonlocal res
@@ -206,6 +210,10 @@ class Grid:
             if not entries:  # if all entries have been previously processed
                 res = grid.copy()
                 return
+
+            # constraint heuristic: consider most constrained first
+            # TODO: search for maximum rather than sort
+            entries.sort(key=lambda e: len(get_candidates(e)))
 
             # process word candidates for next entry
             entry = entries[0]
@@ -251,12 +259,19 @@ class Grid:
                         entry.cells[i].label = word[i]
                 used_words.add(word)
 
-                helper(grid, entries[1:])
+                failed_entry = helper(grid, entries[1:])
 
                 # backtrack
                 for cell in previously_blank_cells:
                     cell.label = Cell.BLANK
                 used_words.remove(word)
+
+                # backjump
+                if not entries[0].intersects(failed_entry):
+                    break
+
+            # return failed entry
+            return entries[0]
 
         for _ in range(num_attempts):
             helper(self, self.entries)
@@ -303,14 +318,14 @@ class Cell:
         self.label = Cell.WALL
 
     def get_across(self) -> list[Cell, ...]:
-        """Across array of Cells containing self"""
+        """Across array of Cells containing self, ordered from left to right"""
         res = self.in_direction(Cardinal.WEST)[:0:-1]  # cells in left direction
         res.append(self)
         res.extend(self.in_direction(Cardinal.EAST)[1:])  # cells in right direction
         return res
 
     def get_down(self) -> list[Cell, ...]:
-        """Down array of Cells containing self"""
+        """Down array of Cells containing self, ordered from top to bottom"""
         res = self.in_direction(Cardinal.NORTH)[:0:-1]  # cells in up direction
         res.append(self)
         res.extend(self.in_direction(Cardinal.SOUTH)[1:])  # cells in down direction
@@ -335,6 +350,8 @@ class Cell:
         return f'Cell({self.row}, {self.col})'
 
 
+# TODO: there are many optimizations if all Entry.grid refer to the same grid (i.e. if Entry is an inner class of grid).
+#  Currently, some methods use this assumption. Plan to make Entry an inner class of Grid in the future.
 @dataclass()
 class Entry:
     grid: Grid
@@ -352,13 +369,41 @@ class Entry:
 
         self.id = self.grid.ids[(self.cells[0].row, self.cells[0].col)]
 
+    @cache
     def positions(self) -> tuple[Position]:
         """Returns a tuple of Positions corresponding to the cells in this entry."""
-        # TODO: memoize
-        return tuple(Position(c.row, c.col) for c in self.cells)
+        return tuple(Position(cell.row, cell.col) for cell in self.cells)
+
+    def get_start_cell(self) -> Cell:
+        return self.cells[0]
+
+    def get_end_cell(self) -> Cell:
+        return self.cells[-1]
 
     def get_contents(self) -> str:
-        return ''.join(c.label for c in self.cells)
+        return ''.join(cell.label for cell in self.cells)
+
+    def intersects(self, other: Entry | None) -> bool:
+        if other is None:
+            return False
+        if self.direction is other.direction:
+            return self.get_start_cell() == other.get_start_cell() and self.get_end_cell() == other.get_end_cell()
+        if self.direction is Direction.ACROSS:
+            return (
+                # other has a cell in this entry's row
+                other.get_start_cell().row <= self.get_start_cell().row <= other.get_end_cell().row and
+
+                # this entry has a cell in other's column
+                self.get_start_cell().col <= other.get_start_cell().col <= self.get_end_cell().col
+            )
+        else:  # if self.direction is Direction.DOWN
+            return (
+                # other has a cell in this entry's column
+                other.get_start_cell().col <= self.get_start_cell().col <= other.get_end_cell().col and
+
+                # this entry has a cell in other's row
+                self.get_start_cell().row <= other.get_start_cell().row <= self.get_end_cell().row
+            )
 
     def __repr__(self):
         return f"{self.id}-{self.direction.value}"

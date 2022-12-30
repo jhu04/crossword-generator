@@ -32,7 +32,7 @@ def main():
     import cProfile
     import pstats
 
-    n = 9
+    n = 14
 
     with cProfile.Profile() as pr:
         clue_processor = test_clues(verbose=False)
@@ -45,7 +45,7 @@ def main():
             g = test_grid_layout_generation(n, verbose=False)
 
             # test fill
-            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5, verbosity=0.001)  # TODO: find optimal num_test_strings, 10 seems good?
+            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5, verbosity=0.0001)  # TODO: find optimal num_test_strings, 10 seems good?
 
             print(f'Processed grid {i}')
             print('Final grid:')
