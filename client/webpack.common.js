@@ -13,7 +13,7 @@ module.exports = {
   output: {
     filename: 'bundle.[hash].js',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '/',
+    publicPath: '/'
   },
 
   module: {
@@ -55,9 +55,10 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.json', '.scss'],
     modules: [
       path.resolve(__dirname, 'src'),
+      path.resolve(__dirname, 'server'),
       path.resolve(__dirname, 'node_modules'),
     ],
   },
