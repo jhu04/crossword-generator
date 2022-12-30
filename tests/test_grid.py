@@ -37,20 +37,20 @@ def main():
     import cProfile
     import pstats
 
-    n = 14
+    n = 15
 
     with cProfile.Profile() as pr:
         clue_processor = test_clues(verbose=False)
         num_generated_grids = 0
         i = 0
-        while num_generated_grids < 1:
+        while num_generated_grids < 10:
             print(f'Processing grid {i}')
 
             # test layout generation
             g = test_grid_layout_generation(n, verbose=False)
 
             # test fill
-            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5, verbosity=0.0001)  # TODO: find optimal num_test_strings, 10 seems good?
+            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5, time_limit=10, verbosity=0.0001)  # TODO: find optimal num_test_strings, 10 seems good?
 
             print(f'Processed grid {i}')
             print('Final grid:')
@@ -62,6 +62,9 @@ def main():
                 with open(f'crossword-generator/tests/results/{n}x{n}.txt', 'a') as f:
                     f.write(f'{g.__str__()}\n\n')
                 num_generated_grids += 1
+            else:
+                with open(f'crossword-generator/tests/results/{n}x{n}_failed.txt', 'a') as f:
+                    f.write(f'{g.__str__()}\n\n')
             i += 1
 
     stats = pstats.Stats(pr)

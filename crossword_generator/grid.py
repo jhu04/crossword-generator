@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
 import random
@@ -41,7 +43,7 @@ class Grid:
     def __init__(self, n, set_layout=True):
         self.n = n
         self.grid = tuple(tuple(Cell(self, r, c)
-                          for c in range(n + 2)) for r in range(n + 2))
+                                for c in range(n + 2)) for r in range(n + 2))
         for i in range(self.n + 2):
             self.grid[i][0].make_wall()
             self.grid[i][self.n + 1].make_wall()
@@ -138,7 +140,7 @@ class Grid:
         return all(not (self.cell(r, c).is_blank()) for c in range(1, self.n + 1) for r in range(1, self.n + 1))
 
     def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_sample_strings=20, num_test_strings=10,
-             verbosity=0) -> None:
+             time_limit=None, verbosity=0) -> None:
         """Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
 
         *We actually want words to be entered in order of the number of blank cells. However,
@@ -159,15 +161,16 @@ class Grid:
         res: Grid | None = None
         used_words = set()
         counter = 0
+        start_time = time.perf_counter()
         print_every = int(1 / verbosity) if verbosity else 0
 
-        def intersection(sets: tuple[set[str], ...]) -> set[str]:
+        def intersection(sets: tuple[set[str]]) -> set[str]:
             if len(sets) == 1:
                 return sets[0]
             return sets[0].intersection(*sets[1:])
 
         # TODO: make faster
-        @lru_cache(maxsize=None)
+        @cache
         def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]) -> set[str]:
             return (
                 intersection(tuple(clue_processor.words[length][constraint] for constraint in constraints))
@@ -186,7 +189,7 @@ class Grid:
             constraints = tuple((i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
 
-        def helper(grid: Grid, entries: list[Entry, ...]) -> Entry | None:
+        def helper(grid: Grid, entries: list[Entry]) -> Entry | None:
             """Fills in one word at a time, proceeding by DFS.
 
             Returns:
@@ -208,6 +211,9 @@ class Grid:
 
             if not entries:  # if all entries have been previously processed
                 res = grid.copy()
+                return
+
+            if time_limit and time.perf_counter() - start_time > time_limit:
                 return
 
             # constraint heuristic: consider most constrained first
@@ -317,24 +323,24 @@ class Cell:
     def make_wall(self) -> None:
         self.label = Cell.WALL
 
-    def get_across(self) -> list[Cell, ...]:
+    def get_across(self) -> list[Cell]:
         """Across array of Cells containing self, ordered from left to right"""
         res = self.in_direction(Cardinal.WEST)[:0:-1]  # cells in left direction
         res.append(self)
         res.extend(self.in_direction(Cardinal.EAST)[1:])  # cells in right direction
         return res
 
-    def get_down(self) -> list[Cell, ...]:
+    def get_down(self) -> list[Cell]:
         """Down array of Cells containing self, ordered from top to bottom"""
         res = self.in_direction(Cardinal.NORTH)[:0:-1]  # cells in up direction
         res.append(self)
         res.extend(self.in_direction(Cardinal.SOUTH)[1:])  # cells in down direction
         return res
 
-    def get_entry_list(self, direction: Direction) -> list[Cell, ...]:
+    def get_entry_list(self, direction: Direction) -> list[Cell]:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
-    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell, ...]:
+    def in_direction(self, cardinal_direction: Cardinal) -> list[Cell]:
         """Returns a list of cells starting at self (inclusive) until hitting a wall.
 
         Only used internally (for get_across and get_down).
@@ -391,18 +397,18 @@ class Entry:
         if self.direction is Direction.ACROSS:
             return (
                 # other has a cell in this entry's row
-                other.get_start_cell().row <= self.get_start_cell().row <= other.get_end_cell().row and
+                    other.get_start_cell().row <= self.get_start_cell().row <= other.get_end_cell().row and
 
-                # this entry has a cell in other's column
-                self.get_start_cell().col <= other.get_start_cell().col <= self.get_end_cell().col
+                    # this entry has a cell in other's column
+                    self.get_start_cell().col <= other.get_start_cell().col <= self.get_end_cell().col
             )
         else:  # if self.direction is Direction.DOWN
             return (
                 # other has a cell in this entry's column
-                other.get_start_cell().col <= self.get_start_cell().col <= other.get_end_cell().col and
+                    other.get_start_cell().col <= self.get_start_cell().col <= other.get_end_cell().col and
 
-                # this entry has a cell in other's row
-                self.get_start_cell().row <= other.get_start_cell().row <= self.get_end_cell().row
+                    # this entry has a cell in other's row
+                    self.get_start_cell().row <= other.get_start_cell().row <= self.get_end_cell().row
             )
 
     def __repr__(self):
