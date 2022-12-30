@@ -43,7 +43,7 @@ class ClueProcessor:
         print('Processing:', path)
 
         clues = pd.read_csv(path, sep=delimiter, encoding='ISO-8859-1', engine='python').dropna()
-        if const.CLEANED_SUFFIX not in path:
+        if const.RECLEAN:
             # TODO: make this readable
             re_clue = r'\d+(?:(?:A|D)|(?:-(?:Across|Down)))'
             re_answer = r'([A-Z])\1{3,}'

@@ -40,7 +40,7 @@ class Direction(Enum):
 class Grid:
     """1-indexed n x n grid of Cells"""
 
-    def __init__(self, n, set_layout=True):
+    def __init__(self, n, generate_layout=True):
         self.n = n
         self.grid = tuple(tuple(Cell(self, r, c)
                                 for c in range(n + 2)) for r in range(n + 2))
@@ -49,19 +49,31 @@ class Grid:
             self.grid[i][self.n + 1].make_wall()
             self.grid[0][i].make_wall()
             self.grid[self.n + 1][i].make_wall()
+        self.clear()
 
-        self.across = {}
-        self.down = {}
-        self.ids = {}
-        self.entries = []
-        if set_layout:
-            self.generate_layout()
-            self.number_cells()
+        if generate_layout:
+            while True:
+                self.generate_layout()
+                self.number_cells()
+                if not self.is_connected() or (n >= const.LARGE_GRID_CUTOFF and \
+                   sum(e.length == n for e in self.entries) not in const.WORDS_LENGTH_N_RANGE):
+                    self.clear()
+                else:
+                    break
 
     def cell(self, r: int, c: int) -> Cell | None:
         if r < 0 or r >= len(self.grid) or c < 0 or c >= len(self.grid[0]):
             return None
         return self.grid[r][c]
+    
+    def clear(self) -> None:
+        for i in range(1, self.n + 1):
+            for j in range(1, self.n + 1):
+                self.cell(i, j).label = Cell.BLANK
+        self.across = {}
+        self.down = {}
+        self.ids = {}
+        self.entries = []
 
     def generate_layout(self) -> None:
         """Generates a 2D array of Cells, subject to requirements on the number of 
@@ -135,6 +147,27 @@ class Grid:
                 if is_entry:
                     identifier += 1
         self.entries.sort(key=lambda e: -e.length)
+    
+    def is_connected(self) -> bool:
+        r, c = 1, 1
+        while self.cell(r, c).is_wall():
+            r = random.randint(1, self.n)
+            c = random.randint(1, self.n)
+        num_not_wall = sum(not self.cell(i, j).is_wall() 
+                           for i in range(1, self.n + 1) for j in range(1, self.n + 1))
+        queue, visited = [], set()
+        queue.append(self.cell(r, c))
+        visited.add(self.cell(r, c))
+        while queue:
+            u = queue.pop(0)
+            for cardinal_dir in Cardinal:
+                v = u.get_neighbor(cardinal_dir)
+                if 1 <= v.row <= self.n and 1 <= v.col <= self.n and \
+                   not v.is_wall() and v not in visited:
+                    queue.append(v)
+                    visited.add(v)
+        return len(visited) == num_not_wall
+
 
     def is_filled(self) -> bool:
         return all(not (self.cell(r, c).is_blank()) for c in range(1, self.n + 1) for r in range(1, self.n + 1))
@@ -285,7 +318,7 @@ class Grid:
                 return
 
     def copy(self) -> Grid:
-        g = Grid(self.n, set_layout=False)
+        g = Grid(self.n, generate_layout=False)
         for r in range(1, self.n + 1):
             for c in range(1, self.n + 1):
                 g.cell(r, c).label = self.cell(r, c).label
@@ -312,7 +345,8 @@ class Cell:
         self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)
 
     def get_neighbor(self, cardinal_direction: Cardinal) -> Cell:
-        return self.grid.cell(self.row + cardinal_direction.value.row, self.col + cardinal_direction.value.col)
+        return self.grid.cell(self.row + cardinal_direction.value.row, 
+                              self.col + cardinal_direction.value.col)
 
     def is_blank(self) -> bool:
         return self.label == Cell.BLANK

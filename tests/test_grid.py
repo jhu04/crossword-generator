@@ -4,7 +4,7 @@ from crossword_generator.clue_processor import CollectiveClueProcessor
 from crossword_generator.grid import Grid
 
 
-def test_grid_layout_generation(size, verbose=True):
+def test_grid_layout_generation(size=7, verbose=True):
     if verbose:
         for n in const.SIZE_RANGE:
             print(f"n = {n}\n{Grid(n)}\n")
@@ -20,17 +20,6 @@ def test_grid_layout_generation(size, verbose=True):
         print()
 
     return g
-
-
-def test_clues(verbose=True):
-    for source in const.CLUE_SOURCES:
-        source['path'] = os.path.join(const.DATA_ROOT, source['file_name'])
-
-    clue_processor = CollectiveClueProcessor(const.CLUE_SOURCES, verbose)
-    if verbose:
-        print(clue_processor.clues.len.value_counts())
-        print(clue_processor.words[const.MIN_WORD_LENGTH])
-    return clue_processor
 
 
 def main():
@@ -75,4 +64,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    test_grid_layout_generation()

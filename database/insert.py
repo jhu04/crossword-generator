@@ -4,7 +4,10 @@ from pymongo import MongoClient
 import bson
 import bson.json_util
 from database.documents import CrosswordBuilder, PublishType
-from tests.test_grid import test_clues, test_grid_layout_generation
+
+# TODO: clean this up!
+from tests.test_clues import test_clues
+from tests.test_grid import test_grid_layout_generation
 
 load_dotenv()
 
