@@ -31,7 +31,7 @@ def main():
 
     clue_processor = test_clues(verbose=False)
     grid = test_grid_layout_generation(n, verbose=False)
-    grid.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5,
+    grid.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5, time_limit=10,
               verbosity=0.001)  # TODO: find optimal num_test_strings, 10 seems good?
     print('Generated grid:')
     print(grid)
