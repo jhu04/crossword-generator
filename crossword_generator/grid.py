@@ -6,6 +6,7 @@ from functools import lru_cache, cache
 from typing import ClassVar, Final
 from collections.abc import Sequence
 from crossword_generator.clue_processor import ClueProcessor
+import crossword_generator.constants as const
 
 
 @dataclass()
@@ -39,7 +40,8 @@ class Grid:
 
     def __init__(self, n, set_layout=True):
         self.n = n
-        self.grid = tuple(tuple(Cell(self, r, c) for c in range(n + 2)) for r in range(n + 2))
+        self.grid = tuple(tuple(Cell(self, r, c)
+                          for c in range(n + 2)) for r in range(n + 2))
         for i in range(self.n + 2):
             self.grid[i][0].make_wall()
             self.grid[i][self.n + 1].make_wall()
@@ -65,10 +67,8 @@ class Grid:
         adding walls that satisfy these requirements."""
 
         # TODO: make cleaner bounds
-        MAX_WALL = int(0.17 * self.n ** 2 + 0.066 * self.n - 1.1)
+        MAX_WALL = int(self.n ** 2 // 6)
         MAX_WORDS = int(0.34 * self.n ** 2 - 0.3 * self.n + 4)
-        MIN_WORD_LENGTH = 3
-        SYMMETRIC_SIZES = set(range(100))
 
         curr_wall = 0
         curr_words = 2 * self.n
@@ -96,20 +96,19 @@ class Grid:
             available_cells.remove((r, c))
 
         illegal_cells = []
-        if self.n in SYMMETRIC_SIZES and self.n % 2 == 1:
-            for i in range(int(-(MIN_WORD_LENGTH + 1) / 2), int((MIN_WORD_LENGTH + 1) / 2)):
+        if self.n in const.SYMMETRIC_SIZES and self.n % 2 == 1:
+            for i in range(int(-(const.MIN_WORD_LENGTH + 1) / 2), int((const.MIN_WORD_LENGTH + 1) / 2)):
                 illegal_cells.append((i + (self.n + 1) / 2, (self.n + 1) / 2))
                 illegal_cells.append(((self.n + 1) / 2, i + (self.n + 1) / 2))
 
         while curr_wall < MAX_WALL and curr_words < MAX_WORDS:
             r, c = available_cells[random.randint(0, len(available_cells) - 1)]
-            if all(self.cell(r, c).get_neighbor(cardinal_direction).is_wall()
-                   or len(self.cell(r, c).in_direction(cardinal_direction)) > MIN_WORD_LENGTH
-                   for cardinal_direction in Cardinal
-                   ):
+            if all(self.cell(r, c).get_neighbor(cardinal_dir).is_wall()
+                   or len(self.cell(r, c).in_direction(cardinal_dir)) > const.MIN_WORD_LENGTH
+                   for cardinal_dir in Cardinal):
                 if (r, c) not in illegal_cells:
                     add_wall(r, c)
-                    if self.n in SYMMETRIC_SIZES:
+                    if self.n in const.SYMMETRIC_SIZES:
                         add_wall(self.n + 1 - r, self.n + 1 - c)
 
     def number_cells(self) -> None:
@@ -303,7 +302,8 @@ class Cell:
     label: str = field(default=BLANK, hash=False)
 
     def __post_init__(self):
-        self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)  # allow memoization without memory leaks
+        # allow memoization without memory leaks
+        self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)
 
     def get_neighbor(self, cardinal_direction: Cardinal) -> Cell:
         return self.grid.cell(self.row + cardinal_direction.value.row, self.col + cardinal_direction.value.col)
