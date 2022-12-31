@@ -41,6 +41,7 @@ class Grid:
 
     def __init__(self, n, generate_layout=True):
         self.n = n
+        self.cell_range = range(1, self.n + 1)
         self.grid = tuple(tuple(Cell(self, r, c)
                                 for c in range(n + 2)) for r in range(n + 2))
         for i in range(self.n + 2):
@@ -71,8 +72,8 @@ class Grid:
         return self.grid[r][c]
 
     def clear(self) -> None:
-        for i in range(1, self.n + 1):
-            for j in range(1, self.n + 1):
+        for i in self.cell_range:
+            for j in self.cell_range:
                 self.cell(i, j).label = Cell.BLANK
         self.across = {}
         self.down = {}
@@ -85,8 +86,8 @@ class Grid:
         adding walls that satisfy these requirements."""
         curr_wall = 0
         curr_words = 2 * self.n
-        available_cells = [(i, j) for i in range(1, self.n + 1) for j in
-                           range(1, self.n + 1)]  # TODO: optimize to use set instead of list
+        available_cells = [(i, j) for i in self.cell_range for j in
+                           self.cell_range]  # TODO: optimize to use set instead of list
 
         def num_added_words(r: int, c: int) -> int:
             """Returns the number of additional words that would be obtained by adding a wall at (r, c).
@@ -128,8 +129,8 @@ class Grid:
         """Assigns clue numbers to cells. Specifically, assigns `across`,
         `down`, `ids`, and `entries`."""
         identifier = 1
-        for r in range(1, self.n + 1):
-            for c in range(1, self.n + 1):
+        for r in self.cell_range:
+            for c in self.cell_range:
                 if self.cell(r, c).is_wall():
                     continue
                 is_entry = False
@@ -155,7 +156,7 @@ class Grid:
             r = random.randint(1, self.n)
             c = random.randint(1, self.n)
         num_not_wall = sum(not self.cell(i, j).is_wall()
-                           for i in range(1, self.n + 1) for j in range(1, self.n + 1))
+                           for i in self.cell_range for j in self.cell_range)
         queue, visited = [], set()
         queue.append(self.cell(r, c))
         visited.add(self.cell(r, c))
@@ -170,7 +171,7 @@ class Grid:
         return len(visited) == num_not_wall
 
     def is_filled(self) -> bool:
-        return all(not (self.cell(r, c).is_blank()) for c in range(1, self.n + 1) for r in range(1, self.n + 1))
+        return all(not (self.cell(r, c).is_blank()) for c in self.cell_range for r in self.cell_range)
 
     def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_sample_strings=20, num_test_strings=10,
              time_limit=None, verbosity=0) -> None:
@@ -325,14 +326,14 @@ class Grid:
 
     def copy(self) -> Grid:
         g = Grid(self.n, generate_layout=False)
-        for r in range(1, self.n + 1):
-            for c in range(1, self.n + 1):
+        for r in self.cell_range:
+            for c in self.cell_range:
                 g.cell(r, c).label = self.cell(r, c).label
         g.number_cells()
         return g
 
     def __str__(self):
-        return '\n'.join(' '.join(self.cell(i, j).label for j in range(1, self.n + 1)) for i in range(1, self.n + 1))
+        return '\n'.join(' '.join(self.cell(i, j).label for j in self.cell_range) for i in self.cell_range)
 
 
 @dataclass(unsafe_hash=True)

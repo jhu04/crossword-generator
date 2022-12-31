@@ -3,9 +3,8 @@ from dataclasses import dataclass, field
 import datetime
 from enum import Enum
 from random import randrange
-import re
-from typing import ClassVar
 
+import generation.constants as const
 from generation.clue_processor import ClueProcessor
 from generation.grid import Grid, Cell, Direction
 
@@ -55,8 +54,10 @@ class Crossword:
     puzzle_data: PuzzleData
 
     def __post_init__(self):
-        assert len(self.puzzle_data.layout) == self.puzzle_meta.width * self.puzzle_meta.height
-        assert len(self.puzzle_data.answers) == self.puzzle_meta.width * self.puzzle_meta.height
+        assert len(self.puzzle_data.layout) == self.puzzle_meta.width * \
+            self.puzzle_meta.height
+        assert len(self.puzzle_data.answers) == self.puzzle_meta.width * \
+            self.puzzle_meta.height
 
         self.print_date = self.puzzle_meta.printDate
 
@@ -70,60 +71,65 @@ class PublishType(Enum):
 
 @dataclass(frozen=True)
 class CrosswordBuilder:
-    INVALID_CLUE_CONTENT: ClassVar[re.Pattern] = re.compile(r'\d+-(across|down)', re.I)
-
     grid: Grid
     clue_processor: ClueProcessor
     publish_type: PublishType
 
     def __post_init__(self):
         if self.publish_type is PublishType.DAILY:
-            assert self.grid.n == 5 or self.grid.n == 11
+            assert self.grid.n in const.DAILY_MINI_SIZES or \
+                self.grid.n in const.DAILY_MAXI_SIZES
 
     def cell_to_index(self, cell: Cell):
         return self.grid.n * (cell.row - 1) + (cell.col - 1)
 
     def get_clues(self) -> Clues:
-        a = []
-        d = []
-
+        a, d = [], []
         for entry in self.grid.entries:
             df = self.clue_processor.clues
             contents = df[df.answer == entry.get_contents()]
-
-            while (value := contents.iloc[randrange(0, len(contents))]['clue']) and self.INVALID_CLUE_CONTENT.search(value):
-                pass
-
+            value = contents.iloc[randrange(0, len(contents))]['clue']
             clue = Clue(
                 clueStart=self.cell_to_index(entry.cells[0]),
                 clueNum=entry.id,
                 clueEnd=self.cell_to_index(entry.cells[-1]),
                 value=value
             )
-
             if entry.direction is Direction.ACROSS:
                 a.append(clue)
             else:
                 d.append(clue)
+
         return Clues(A=a, D=d)
 
     def get_layout(self) -> list[int]:
         layout = []
-        for r in range(1, self.grid.n + 1):
-            for c in range(1, self.grid.n + 1):
+        for r in self.grid.cell_range:
+            for c in self.grid.cell_range:
                 layout.append(0 if self.grid.cell(r, c).is_wall() else 1)
         return layout
 
     def get_answers(self) -> list[str]:
         answers = []
-        for r in range(1, self.grid.n + 1):
-            for c in range(1, self.grid.n + 1):
+        for r in self.grid.cell_range:
+            for c in self.grid.cell_range:
                 answers.append(self.grid.cell(r, c).label)
         return answers
 
     def build(self) -> Crossword:
         today = datetime.date.today().strftime('%Y-%m-%d')
-        
+        if self.publish_type is PublishType.DAILY:
+            if self.grid.n in const.DAILY_MINI_SIZES:
+                title = 'The Daily Mini'
+            elif self.grid.n in const.DAILY_MAXI_SIZES:
+                title = 'The Daily Maxi'
+            else:
+                raise Exception(
+                    f'{self.grid.n} is invalid size for daily puzzles')
+        elif self.publish_type is PublishType.FREE:
+            title = 'Free Mode'
+        else:
+            title = f'Fake Puzzle, Size {self.grid.n}'
 
         return Crossword(
             puzzle_id=None,
@@ -132,7 +138,7 @@ class CrosswordBuilder:
             puzzle_meta=PuzzleMetadata(
                 formatType=None,
                 publishType=self.publish_type.value,
-                title=f'The Daily {"Mini" if self.grid.n == 5 else "Maxi"}' if self.publish_type is PublishType.DAILY else 'Free Mode',
+                title=title,
                 printDate=today,
                 printDotw=None,
                 editor=None,

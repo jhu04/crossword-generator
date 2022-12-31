@@ -8,7 +8,7 @@ class CollectiveClueProcessor:
     A collection of clue processors.
     """
 
-    def __init__(self, inputs, verbose):
+    def __init__(self, inputs, verbose=True):
         assert isinstance(inputs, list)
         processors = [ClueProcessor(
             i['path'], i['filter'], i['delimeter'], verbose) for i in inputs]
@@ -45,7 +45,7 @@ class ClueProcessor:
         clues = pd.read_csv(path, sep=delimiter, encoding='ISO-8859-1', engine='python').dropna()
         if const.RECLEAN:
             # TODO: make this readable
-            re_clue = r'\d+(?:(?:A|D)|(?:-(?:Across|Down)))'
+            re_clue = r'(?i)\d+((A|D)|-(Across|Down))'
             re_answer = r'([A-Z])\1{3,}'
             braces = [('\"', '\"'), ('(', ')'), ('[', ']')]
 
