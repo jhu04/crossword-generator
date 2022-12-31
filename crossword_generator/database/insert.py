@@ -60,6 +60,8 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--type', nargs='?', type=str, default='fake')
     args = parser.parse_args()
 
+    if not args.sizes:
+        raise Exception('Provide at least one grid size to generate.')
     if args.type.lower() == 'daily':
         publish_type = PublishType.DAILY
     elif args.type.lower() == 'free':
@@ -67,6 +69,6 @@ if __name__ == '__main__':
     elif args.type.lower() == 'fake':
         publish_type = PublishType.FAKE
     else:
-        raise Exception('Invalid --type')
+        raise Exception('Invalid --type.')
 
     main(args.sizes, args.num_grids, publish_type)
