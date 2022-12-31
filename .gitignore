@@ -1,0 +1,9 @@
+data/
+tests/results/
+__pycache__/
+
+.DS_Store
+node_modules
+npm-debug.log
+.env
+client/dist/bundle.*
