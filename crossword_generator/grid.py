@@ -222,6 +222,7 @@ class Grid:
             constraints = tuple((i, entry.cells[i].label) for i in range(entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
 
+        heuristic = lambda e: len(get_candidates(e))
         def helper(grid: Grid, entries: list[Entry]) -> Entry | None:
             """Fills in one word at a time, proceeding by DFS.
 
@@ -251,7 +252,7 @@ class Grid:
 
             # constraint heuristic: consider most constrained first
             # TODO: search for maximum rather than sort
-            entries.sort(key=lambda e: len(get_candidates(e)))
+            entries.sort(key=heuristic)
 
             # process word candidates for next entry
             entry = entries[0]
