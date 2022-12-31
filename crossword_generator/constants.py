@@ -8,6 +8,7 @@ MIN_WORD_LENGTH = 3
 LARGE_GRID_CUTOFF = 11
 WORDS_LENGTH_N_MIN = 2
 WORDS_LENGTH_N_MAX = 2
+WORDS_LENGTH_3_MAX_PROP = 0.3
 ALPHABET = string.ascii_uppercase
 
 SIZE_RANGE = range(MIN_SIZE, MAX_SIZE + 1)
@@ -15,10 +16,10 @@ WORD_LENGTH_RANGE = range(MIN_WORD_LENGTH, MAX_SIZE + 1)
 WORDS_LENGTH_N_RANGE = range(WORDS_LENGTH_N_MIN, WORDS_LENGTH_N_MAX + 1)
 SYMMETRIC_SIZES = range(LARGE_GRID_CUTOFF, MAX_SIZE + 1)
 
-RECLEAN = True
+RECLEAN = False
 CLEANED_SUFFIX = '-cleaned'
 FILENAME_SUFFIX = '' if RECLEAN else CLEANED_SUFFIX
-DATA_ROOT = os.path.abspath('../data')
+DATA_ROOT = os.path.abspath('../crossword_generator/data')
 CLUE_SOURCES = [
     {
         'file_name': f'xd{FILENAME_SUFFIX}.txt',
