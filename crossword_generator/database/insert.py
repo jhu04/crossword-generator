@@ -1,8 +1,11 @@
-import os, argparse
+import os
+import argparse
 from dotenv import load_dotenv
 from pymongo import MongoClient
-import bson, bson.json_util
-from random import choice
+import bson
+import bson.json_util
+import math
+import numpy as np
 
 from database.documents import CrosswordBuilder, PublishType
 import generation.constants as const
@@ -11,6 +14,10 @@ from generation.grid import Grid
 
 load_dotenv()
 MONGODB_URI = os.getenv('MONGODB_URI')
+DBNAME = os.getenv('DBNAME')
+COLLECTION = os.getenv('COLLECTION')
+client = MongoClient(MONGODB_URI, tlsAllowInvalidCertificates=True)
+collection = client[DBNAME][COLLECTION]
 
 
 def to_bson(obj):
@@ -27,30 +34,26 @@ def to_bson(obj):
     return bson.json_util.loads(bson.json_util.dumps(obj, default=lambda o: o.__dict__))
 
 
-def main(sizes, num_grids, publish_type):
+def main(sizes, num_grids, publish_type, select_props=lambda _: 1):
+    props = np.array([select_props(n) for n in sizes])
+    props = props / np.sum(props)
     for source in const.CLUE_SOURCES:
         source['path'] = os.path.join(const.DATA_ROOT, source['file_name'])
     clue_processor = CollectiveClueProcessor(const.CLUE_SOURCES)
-    generated_builds = []
 
     for _ in range(num_grids):
-        n = choice(sizes)
+        n = int(np.random.choice(sizes, p=props))
         grid = Grid(n)
         grid.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5, time_limit=10,
-                verbosity=0.001)  # TODO: find optimal num_test_strings, 10 seems good?
+                  verbosity=0.001)  # TODO: find optimal num_test_strings, 10 seems good?
         print('Generated grid:')
         print(grid)
         print()
 
         if grid.is_filled():
-            generated_builds.append(CrosswordBuilder(grid, clue_processor, publish_type).build())
-    
-    with MongoClient(MONGODB_URI, tlsAllowInvalidCertificates=True) as client:
-        for crossword in generated_builds:
-            db = client.puzzles
-            all_collection = db.all
-            all_collection.insert_one(to_bson(crossword))
-            print(f'Inserted {crossword}')
+            crossword = CrosswordBuilder(grid, clue_processor, publish_type).build()
+            collection.insert_one(to_bson(crossword))
+            print(f'Inserted above crossword; size {n}.\n')
 
 
 if __name__ == '__main__':
@@ -71,4 +74,4 @@ if __name__ == '__main__':
     else:
         raise Exception('Invalid --type.')
 
-    main(args.sizes, args.num_grids, publish_type)
+    main(args.sizes, args.num_grids, publish_type, select_props=lambda n: 1/math.sqrt(n))
