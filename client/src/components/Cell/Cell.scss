@@ -4,7 +4,32 @@
   background-color: white;
   position: relative;
   box-sizing: border-box;
-  align-items: center;
+  width: 48px;
+}
+
+.cell::after {
+  content: '';
+  display: block;
+  margin-top: 100%;
+}
+
+.number {
+  color: black;
+  font-size: 11px;
+  padding: 5% 7% 0;
+  position: absolute;
+  line-height: 7px;
+  box-sizing: border-box;
+  top: 2px;
+}
+
+.guess {
+  font-size: 32px;
+  cursor: default;
+  position: absolute;
+  text-align: center;
+  bottom: 0;
+  width: 100%;
 }
 
 .solved {
@@ -41,25 +66,6 @@
   left: -22.5%;
   top: 50%;
   width: 141.42136%;
-}
-
-.number {
-  color: black;
-  font-size: 1vw;
-  padding: 5% 7% 0;
-  position: absolute;
-  top: 0;
-  line-height: 8px;
-  box-sizing: border-box;
-}
-
-.guess {
-  font-size: 1.8vw;
-  line-height: 1.8vw;
-  cursor: default;
-  position: absolute;
-  text-align: center;
-  width: 100%;
 }
 
 .cheat {

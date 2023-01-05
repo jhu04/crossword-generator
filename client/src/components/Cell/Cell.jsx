@@ -36,6 +36,7 @@ class Cell extends React.Component {
 
     const guessClasses = classNames(css.guess, {
       [css.solved]: solved,
+      [css.cell_obscured]: obscured && this.props.guess,
     });
 
 

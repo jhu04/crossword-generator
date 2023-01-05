@@ -24,4 +24,8 @@
 .clueValue{
   font-size: 16px;
   line-height: 20px;
+  display: inline-block;
+  text-overflow: initial;
+  white-space: normal;
+  word-wrap: break-word;
 }
