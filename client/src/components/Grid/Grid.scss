@@ -2,19 +2,19 @@
   position: relative;
 }
 
-.gridContainer:after {
+/* .gridContainer:after {
   content: "";
   display: block;
   padding-bottom: 100%;
-}
+} */
 
-.gridContent {
+/* .gridContent {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-}
+} */
 
 .gridInnerContent {
   display: table;
@@ -23,7 +23,7 @@
   height: 100%;
   box-sizing: border-box;
   table-layout: fixed;
-  border: 3px solid black;
+  border: 2px solid black;
 }
 
 .gridRow {
