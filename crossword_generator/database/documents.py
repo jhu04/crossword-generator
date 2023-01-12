@@ -106,7 +106,7 @@ class CrosswordBuilder:
         layout = []
         for r in self.grid.cell_range:
             for c in self.grid.cell_range:
-                layout.append(0 if self.grid.cell(r, c).is_wall() else 1)
+                layout.append(0 if self.grid.cell(r, c).is_block() else 1)
         return layout
 
     def get_answers(self) -> list[str]:

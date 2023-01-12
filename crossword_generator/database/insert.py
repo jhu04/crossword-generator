@@ -38,7 +38,7 @@ def main(sizes, num_grids, publish_type, select_props=lambda _: 1):
     props = np.array([select_props(n) for n in sizes])
     props = props / np.sum(props)
     for source in const.CLUE_SOURCES:
-        source['path'] = os.path.join(const.DATA_ROOT, source['file_name'])
+        source['path'] = os.path.join(const.DATA_PATH, source['file_name'])
     clue_processor = CollectiveClueProcessor(const.CLUE_SOURCES)
 
     for _ in range(num_grids):
