@@ -1,4 +1,4 @@
-"""Contains helper methods used throughout generation."""
+"""Non-specific helper methods."""
 
 def collapse(f):
     """Returns function that collapses binary operator f. TODO: clean code."""

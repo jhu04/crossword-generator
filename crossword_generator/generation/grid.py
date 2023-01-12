@@ -73,7 +73,8 @@ class Grid:
         if generate_layout:
             custom_globals = {'self': self}
             num_attempts = 0
-            failure_causes = {lengths: 0 for lengths in const.WORD_LENGTH_REQUIREMENTS}
+            failure_causes = {
+                lengths: 0 for lengths in const.WORD_LENGTH_REQUIREMENTS}
             while True:
                 self.generate_layout()
                 self.number_cells()
@@ -81,8 +82,8 @@ class Grid:
                 length_req = True
                 if self.n >= const.LARGE_GRID_CUTOFF:
                     for lengths, req in const.WORD_LENGTH_REQUIREMENTS.items():
-                        success = sum(e.length in eval(lengths, custom_globals) for e in self.entries) \
-                            in eval(req, custom_globals)
+                        success = sum(e.length in eval(lengths, custom_globals) \
+                            for e in self.entries) in eval(req, custom_globals)
                         if not success:
                             failure_causes[lengths] += 1
                             length_req = False
@@ -120,8 +121,8 @@ class Grid:
 
         def num_added_words(r: int, c: int) -> int:
             """Returns the number of additional words that would be obtained by adding a block at (r, c)."""
-            return 2 - sum(
-                self.grid[r + direction.value.row][c + direction.value.col].is_block() for direction in Cardinal)
+            return 2 - sum(self.grid[r + direction.value.row][c + direction.value.col].is_block()
+                for direction in Cardinal)
 
         def add_block(r: int, c: int, block_neighbors: list[tuple[int, int]]) -> None:
             nonlocal curr_block, curr_words
@@ -137,8 +138,10 @@ class Grid:
             if self.n % 2 == 1:
                 for i in range(-(const.MIN_WORD_LENGTH-1)//2, (const.MIN_WORD_LENGTH+1)//2):
                     try:
-                        available_cells.remove((i + (self.n+1)//2, (self.n+1)//2))
-                        available_cells.remove(((self.n+1)//2, i + (self.n+1)//2))
+                        available_cells.remove(
+                            (i + (self.n+1)//2, (self.n+1)//2))
+                        available_cells.remove(
+                            ((self.n+1)//2, i + (self.n+1)//2))
                     except ValueError:
                         pass
             else:
@@ -156,12 +159,14 @@ class Grid:
                    for cardinal_dir in Cardinal):
                 if (r, c) in available_cells:
                     curr_attempts = 0
-                    block_neighbors = set(uf) & set((r + dir.value.row, c + dir.value.col) for dir in Ordinal)                    
+                    block_neighbors = set(uf) & set(
+                        (r + dir.value.row, c + dir.value.col) for dir in Ordinal)
                     adj_components = [uf.component(n) for n in block_neighbors]
                     if len(set().union(*adj_components)) < self.MAX_CLUMP_SIZE:
                         add_block(r, c, block_neighbors)
                         if self.n in const.SYMMETRIC_SIZES:
-                            add_block(self.n + 1 - r, self.n + 1 - c, block_neighbors)
+                            add_block(self.n + 1 - r, self.n +
+                                      1 - c, block_neighbors)
 
     def number_cells(self) -> None:
         """Assigns clue numbers to cells. Specifically, assigns `across`,
@@ -176,12 +181,14 @@ class Grid:
                     is_entry = True
                     self.across[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
-                    self.entries.append(Entry(self, self.cell(r, c).get_across()))
+                    self.entries.append(
+                        Entry(self, self.cell(r, c).get_across()))
                 if self.cell(r, c).get_neighbor(Cardinal.NORTH).is_block():
                     is_entry = True
                     self.down[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
-                    self.entries.append(Entry(self, self.cell(r, c).get_down()))
+                    self.entries.append(
+                        Entry(self, self.cell(r, c).get_down()))
                 if is_entry:
                     identifier += 1
         self.entries.sort(key=lambda e: -e.length)
@@ -192,7 +199,7 @@ class Grid:
             r = random.randint(1, self.n)
             c = random.randint(1, self.n)
         num_not_block = sum(not self.cell(i, j).is_block()
-                           for i in self.cell_range for j in self.cell_range)
+                            for i in self.cell_range for j in self.cell_range)
         queue, visited = [], set()
         queue.append(self.cell(r, c))
         visited.add(self.cell(r, c))
@@ -217,8 +224,8 @@ class Grid:
         Fills with letters to form words from clue_processor.words.
 
         num_attempts: Number of times grid tries filling from scratch.
-        num_sample_strings: Number of strings to sample per entry. A subset of this sample will
-            be taken for testing.
+        num_sample_strings: Number of strings to sample per entry. A subset of 
+            this sample will be taken for testing.
         num_test_strings: Number of strings grid tests per entry.
         verbosity: Proportion of the time things will print.
         """
@@ -233,13 +240,15 @@ class Grid:
         @cache
         def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]) -> set[str]:
             if constraints:
-                words = [clue_processor.words[length][constraint] for constraint in constraints]
+                words = [clue_processor.words[length][constraint]
+                         for constraint in constraints]
                 return set.intersection(*words)
             else:
                 return clue_processor.words[length]['all']
 
         def get_candidates(entry: Entry) -> set[str]:
-            """Returns a tuple of all possible words that fit the constraints of the entry."""
+            """Returns a tuple of all possible words that fit the constraints 
+            of the entry."""
             constraints = tuple((i, entry.cells[i].label) for i in range(
                 entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
@@ -350,7 +359,8 @@ class Grid:
         return g
 
     def __str__(self):
-        return '\n'.join(' '.join(self.cell(i, j).label for j in self.cell_range) for i in self.cell_range)
+        return '\n'.join(' '.join(self.cell(i, j).label 
+            for j in self.cell_range) for i in self.cell_range)
 
 
 @dataclass(unsafe_hash=True)
@@ -382,29 +392,17 @@ class Cell:
 
     def get_across(self) -> list[Cell]:
         """Across array of Cells containing self, ordered from left to right"""
-        res = self.in_direction(Cardinal.WEST)[
-            :0:-1]  # cells in left direction
-        res.append(self)
-        res.extend(self.in_direction(Cardinal.EAST)
-                   [1:])  # cells in right direction
-        return res
+        return self.in_direction(Cardinal.WEST)[:0:-1] + [self] + self.in_direction(Cardinal.EAST)[1:]
 
     def get_down(self) -> list[Cell]:
         """Down array of Cells containing self, ordered from top to bottom"""
-        res = self.in_direction(Cardinal.NORTH)[:0:-1]  # cells in up direction
-        res.append(self)
-        res.extend(self.in_direction(Cardinal.SOUTH)
-                   [1:])  # cells in down direction
-        return res
+        return self.in_direction(Cardinal.NORTH)[:0:-1] + [self] + self.in_direction(Cardinal.SOUTH)[1:]
 
     def get_entry_list(self, direction: Direction) -> list[Cell]:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
     def in_direction(self, cardinal_direction: Cardinal) -> list[Cell]:
-        """Returns a list of cells starting at self (inclusive) until hitting a block.
-
-        Only used internally (for get_across and get_down).
-        """
+        """Returns a list of cells starting at self (inclusive) until hitting a block."""
         res = []
         cur_cell = self
         while not cur_cell.is_block():
@@ -416,10 +414,15 @@ class Cell:
         return f'<Cell row={self.row} col={self.col} label={self.label}>'
 
 
-# TODO: there are many optimizations if all Entry.grid refer to the same grid (i.e. if Entry is an inner class of grid).
-#  Currently, some methods use this assumption. Plan to make Entry an inner class of Grid in the future.
 @dataclass()
 class Entry:
+    """
+
+
+    TODO: there are many optimizations if all Entry.grid refer to the same grid 
+          (i.e. if Entry is an inner class of grid). Currently, some methods use
+          this assumption. Plan to make Entry an inner class of Grid in the future.
+    """
     grid: Grid
     cells: Sequence[Cell]
     length: int = field(init=False)
@@ -458,15 +461,13 @@ class Entry:
             return (
                 # other has a cell in this entry's row
                 other.get_start_cell().row <= self.get_start_cell().row <= other.get_end_cell().row and
-
                 # this entry has a cell in other's column
                 self.get_start_cell().col <= other.get_start_cell().col <= self.get_end_cell().col
             )
-        else:  # if self.direction is Direction.DOWN
+        else:   # if self.direction is Direction.DOWN
             return (
                 # other has a cell in this entry's column
                 other.get_start_cell().col <= self.get_start_cell().col <= other.get_end_cell().col and
-
                 # this entry has a cell in other's row
                 self.get_start_cell().row <= other.get_start_cell().row <= self.get_end_cell().row
             )

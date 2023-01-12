@@ -10,10 +10,9 @@ class CollectiveClueProcessor:
     
     def __init__(self, inputs, verbose=True):
         assert isinstance(inputs, list)
-        processors = [ClueProcessor(
-            i['path'], i['filter'], i['delimeter'], verbose) for i in inputs]
-        self.clues = pd.concat(
-            [p.clues for p in processors], ignore_index=True)
+        processors = [ClueProcessor(i['path'], i['filter'], i['delimeter'], verbose) 
+            for i in inputs]
+        self.clues = pd.concat([p.clues for p in processors], ignore_index=True)
         self.words = collapse(union)([p.words for p in processors])
 
 
