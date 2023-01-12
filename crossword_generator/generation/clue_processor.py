@@ -35,7 +35,7 @@ class ClueProcessor:
                             encoding='ISO-8859-1', engine='python').dropna()
         if const.RECLEAN:
             # TODO: make this readable
-            re_clue = r'(?i)\d+((A|D)|-(Across|Down))'
+            re_clue = r'(?i)\d+((A|D)|-(Across|Down))|<\/|<>'
             re_answer = r'([A-Z])\1{3,}'
             braces = [('\"', '\"'), ('(', ')'), ('[', ']')]
 
