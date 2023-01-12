@@ -1,6 +1,6 @@
+import datetime
 from collections.abc import Collection
 from dataclasses import dataclass, field
-import datetime
 from enum import Enum
 from random import randrange
 
