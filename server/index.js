@@ -13,7 +13,7 @@ app.use((req, res, next) => {
 });
 const router = require('./routes');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 mongoose
   .connect(process.env.ATLAS_URI, { autoIndex: false })

@@ -13,7 +13,6 @@ import Home from 'pages/Home/Home';
 import Puzzle from 'pages/Puzzle/Puzzle';
 import NotFound from 'pages/NotFound/NotFound';
 import Loading from './pages/Loading/Loading';
-import css from './index.scss';
 
 function App() {
   const [freeModeSize, setFreeModeSize] = useState(0);
@@ -21,7 +20,7 @@ function App() {
   const SERVER_URL =
     (process.env.NODE_ENV === 'production')
       ? 'https://crossify-server.vercel.app'
-      : 'http://localhost:5000'; // TODO: fix env variables in deployment
+      : 'http://localhost:5001'; // TODO: fix env variables in deployment
 
   useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
