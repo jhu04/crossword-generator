@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import numpy as np
 import random
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import lru_cache, cache
-from typing import ClassVar, Final
+from typing import Callable, ClassVar, Final
 from unionfind import UnionFind
 
 import generation.constants as const
@@ -33,10 +34,10 @@ class Cardinal(Enum):
 
 
 class Ordinal(Enum):
-    N = Cardinal.NORTH.value
-    S = Cardinal.SOUTH.value
-    E = Cardinal.EAST.value
-    W = Cardinal.WEST.value
+    N  = Cardinal.NORTH.value
+    S  = Cardinal.SOUTH.value
+    E  = Cardinal.EAST.value
+    W  = Cardinal.WEST.value
     NE = Position.add(N, E)
     SE = Position.add(S, E)
     SW = Position.add(S, W)
@@ -45,7 +46,7 @@ class Ordinal(Enum):
 
 class Direction(Enum):
     ACROSS = auto()
-    DOWN = auto()
+    DOWN   = auto()
 
     def opposite(self):
         return Direction.DOWN if self is Direction.ACROSS else Direction.ACROSS
@@ -217,9 +218,50 @@ class Grid:
         return all(not (self.cell(r, c).is_blank())
                    for c in self.cell_range for r in self.cell_range)
 
+
+    class Selector:
+        def __init__(self, heuristic_items: list[tuple[float, str]], 
+                     num_test_strings: int,
+                     fn: Callable([tuple[float, str]], tuple[float, str])):
+            self.heuristic_items = [fn(item) for item in heuristic_items]
+            self.num_test_strings = num_test_strings
+
+        def randomize(self, factor) -> None:
+            assert factor >= 1
+            scores, words = zip(*self.heuristic_items)
+            randomize = lambda score: score * factor**random.uniform(-1, 1)
+            self.heuristic_items = list(zip(map(randomize, scores), words))
+        
+        def select(self) -> list[str]:
+            """
+            List of selected strings. By default, chooses those with the
+            highest fn(heuristic) scores.
+            """
+            return [word for _, word in sorted(self.heuristic_items, reverse=True)[:self.num_test_strings]]
+
+
+    class ProbabilisticSelector(Selector):
+        def __init__(self, *args):
+            super().__init__(*args)
+        
+        def select(self) -> list[str]:
+            """
+            Selects words with probabilities proportional to fn(heuristic) scores.
+            """
+            if self.heuristic_items:
+                scores, words = zip(*self.heuristic_items)
+                norm_scores = np.array(scores) / sum(scores)
+                return list(np.random.choice(a=words, 
+                    size=min(self.num_test_strings, len(self.heuristic_items)), replace=False, p=norm_scores))
+            else:
+                return []
+
+
     def fill(self, clue_processor: ClueProcessor,
              num_attempts=10, num_sample_strings=20, num_test_strings=10,
-             time_limit=None, verbosity=0) -> None:
+             time_limit=None, verbosity=0,
+             selector_class: type[Selector] = Selector,
+             fn: Callable([tuple[int, str]], tuple[int, str]) = lambda x: x) -> None:
         """
         Fills with letters to form words from clue_processor.words.
 
@@ -228,13 +270,13 @@ class Grid:
             this sample will be taken for testing.
         num_test_strings: Number of strings grid tests per entry.
         verbosity: Proportion of the time things will print.
+        fn: Function applied to Selector.
         """
-
         res: Grid | None = None
         used_words = set()
         counter = 0
         start_time = time.perf_counter()
-        print_every = int(1 / verbosity) if verbosity else 0
+        print_every = int(1 / verbosity) if verbosity else float('inf')
 
         # TODO: make faster
         @cache
@@ -253,7 +295,8 @@ class Grid:
                 entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
 
-        def heuristic(e): return len(get_candidates(e))
+        def heuristic(e): 
+            return len(get_candidates(e))
 
         def helper(grid: Grid, entries: list[Entry]) -> Entry | None:
             """
@@ -262,68 +305,50 @@ class Grid:
             Returns:
                 An entry that failed to be filled, or None if all entries were filled.
             """
-            nonlocal res
-            if res:  # if solution already exists
+            nonlocal res, counter
+            if res:
                 return
-
-            # verbose information
-            nonlocal counter
-            counter += 1
-            if verbosity and counter % print_every == 0:
-                print(grid)
-                print()
-
             if not entries:  # if all entries have been previously processed
                 res = grid.copy()
                 return
+            counter += 1
+            if counter % print_every == 0:
+                print(grid, '\n')
 
             if time_limit and time.perf_counter() - start_time > time_limit:
                 return
 
-            # constraint heuristic: consider most constrained first
-            # TODO: search for maximum rather than sort
             entries.sort(key=heuristic)
-
-            # process word candidates for next entry
             entry = entries[0]
             candidates = tuple(get_candidates(entry))
-            words = random.sample(candidates, min(
-                num_sample_strings, len(candidates)))
+            words = random.sample(candidates, min(num_sample_strings, len(candidates)))
 
             # compute heuristics for each word
-            heuristic_scores: list[tuple[int, str]] = []
+            heuristic_items: list[tuple[float, str]] = []
             for word in words:
                 if word in used_words:
                     continue
-
                 previously_blank_cells = []
                 heuristic_score = 1
 
                 for i in range(entry.length):
-                    # fill cell
                     if entry.cells[i].label == Cell.BLANK:
                         previously_blank_cells.append(entry.cells[i])
                         entry.cells[i].label = word[i]
-
-                    # calculate heuristic score
                     orthogonal = Entry(grid, entry.cells[i].get_entry_list(
                         entry.direction.opposite()))
-                    heuristic_score *= len(get_candidates(orthogonal))
-                    if heuristic_score == 0:  # optimization
+                    heuristic_score *= heuristic(orthogonal)
+                    if heuristic_score == 0:
                         break
-
-                if heuristic_score != 0:
-                    heuristic_scores.append((heuristic_score, word))
-
-                # backtrack
-                for cell in previously_blank_cells:
+                
+                if heuristic_score:
+                    heuristic_items.append((heuristic_score, word))
+                for cell in previously_blank_cells:  # backtrack
                     cell.label = Cell.BLANK
 
-            # dfs
-            for heuristic_score, word in sorted(heuristic_scores, reverse=True)[:num_test_strings]:
+            selected_words = selector_class(heuristic_items, num_test_strings, fn).select()
+            for word in selected_words:
                 previously_blank_cells = []
-
-                # fill word
                 for i in range(entry.length):
                     if entry.cells[i].label == Cell.BLANK:
                         previously_blank_cells.append(entry.cells[i])
@@ -331,17 +356,12 @@ class Grid:
                 used_words.add(word)
 
                 failed_entry = helper(grid, entries[1:])
-
-                # backtrack
-                for cell in previously_blank_cells:
+                for cell in previously_blank_cells:  # backtrack
                     cell.label = Cell.BLANK
                 used_words.remove(word)
-
-                # backjump
-                if not entries[0].intersects(failed_entry):
+                if not entries[0].intersects(failed_entry):  # backjump
                     break
 
-            # return failed entry
             return entries[0]
 
         for _ in range(num_attempts):
