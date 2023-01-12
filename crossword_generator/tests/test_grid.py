@@ -8,7 +8,7 @@ def test_grid_layout_generation(size=7, verbose=True):
     if verbose:
         for n in const.SIZE_RANGE:
             print(n)
-            print(Grid(n))
+            print(Grid(n, verbose=verbose))
             print()
 
     g = Grid(size)
@@ -26,7 +26,7 @@ def test_grid_layout_generation(size=7, verbose=True):
 
 def test_clues(verbose=True):
     for source in const.CLUE_SOURCES:
-        source['path'] = os.path.join(const.DATA_ROOT, source['file_name'])
+        source['path'] = os.path.join(const.DATA_PATH, source['file_name'])
 
     clue_processor = CollectiveClueProcessor(const.CLUE_SOURCES, verbose)
     if verbose:
@@ -49,11 +49,7 @@ def main(results_path='tests/results'):
         i = 0
         while num_generated_grids < 10:
             print(f'Processing grid {i}')
-
-            # test layout generation
-            g = test_grid_layout_generation(n, verbose=False)
-
-            # test fill
+            g = Grid(n)
             g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5,
                    time_limit=10, verbosity=0.0001)  # TODO: find optimal num_test_strings, 10 seems good?
 

@@ -1,32 +1,20 @@
-import pandas as pd
 import os
+import pandas as pd
+
 import generation.constants as const
+from generation.helper import collapse, union
 
 
 class CollectiveClueProcessor:
-    """
-    A collection of clue processors.
-    """
-
+    """A collection of clue processors."""
+    
     def __init__(self, inputs, verbose=True):
         assert isinstance(inputs, list)
         processors = [ClueProcessor(
             i['path'], i['filter'], i['delimeter'], verbose) for i in inputs]
-        self.clues = pd.concat([p.clues for p in processors], ignore_index=True)
-        self.words = self.collapse(self.union, [p.words for p in processors])
-
-    def collapse(self, f, ls):
-        """Collapse list according to binary operator f. TODO: clean code."""
-        res = ls[0]
-        for i in range(1, len(ls)):
-            res = f(res, ls[i])
-        return res
-
-    def union(self, A, B):
-        """Union of dictionaries A, B, which have the same 'object structure'"""
-        if isinstance(A, set) and isinstance(B, set):
-            return A | B
-        return {k: self.union(A[k], B[k]) for k in A}
+        self.clues = pd.concat(
+            [p.clues for p in processors], ignore_index=True)
+        self.words = collapse(union)([p.words for p in processors])
 
 
 class ClueProcessor:
@@ -39,10 +27,12 @@ class ClueProcessor:
     TODO: currently only processes words for which there exists an associated
     old clue. update this if/when we generate clues ourselves.
     """
+
     def __init__(self, path, filter=lambda row: True, delimiter=',', verbose=True):
         print('Processing:', path)
 
-        clues = pd.read_csv(path, sep=delimiter, encoding='ISO-8859-1', engine='python').dropna()
+        clues = pd.read_csv(path, sep=delimiter,
+                            encoding='ISO-8859-1', engine='python').dropna()
         if const.RECLEAN:
             # TODO: make this readable
             re_clue = r'(?i)\d+((A|D)|-(Across|Down))'
@@ -59,7 +49,8 @@ class ClueProcessor:
             clues['len'] = clues['answer'].apply(lambda s: len(s))
             clues = clues[clues['len'].isin(const.WORD_LENGTH_RANGE)]
             clues = clues[~clues['clue'].str.contains(re_clue)]
-            clues = clues[(~clues['answer'].str.contains(re_answer)) | (clues['answer'].isin(const.WHITELIST))]
+            clues = clues[(~clues['answer'].str.contains(re_answer))
+                          | (clues['answer'].isin(const.WHITELIST))]
 
             root, ext = os.path.splitext(path)
             clues.to_csv(root + const.CLEANED_SUFFIX + ext, sep=delimiter)

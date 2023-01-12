@@ -1,18 +1,19 @@
 from __future__ import annotations
 
+import random
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import Enum, auto
-import random
 from functools import lru_cache, cache
 from typing import ClassVar, Final
-from collections.abc import Sequence
+from unionfind import UnionFind
 
-from generation.clue_processor import ClueProcessor
 import generation.constants as const
+from generation.clue_processor import ClueProcessor
 
 
-@dataclass()
+@dataclass
 class Position:
     row: int
     col: int
@@ -20,12 +21,26 @@ class Position:
     def __repr__(self):
         return f'({self.row}, {self.col})'
 
+    def add(p: Position, q: Position):
+        return Position(p.row + q.row, p.col + q.col)
+
 
 class Cardinal(Enum):
     NORTH = Position(-1, 0)
     SOUTH = Position(1, 0)
     EAST = Position(0, 1)
     WEST = Position(0, -1)
+
+
+class Ordinal(Enum):
+    N = Cardinal.NORTH.value
+    S = Cardinal.SOUTH.value
+    E = Cardinal.EAST.value
+    W = Cardinal.WEST.value
+    NE = Position.add(N, E)
+    SE = Position.add(S, E)
+    SW = Position.add(S, W)
+    NW = Position.add(N, W)
 
 
 class Direction(Enum):
@@ -39,37 +54,49 @@ class Direction(Enum):
 class Grid:
     """1-indexed n x n grid of Cells"""
 
-    def __init__(self, n, generate_layout=True):
+    def __init__(self, n, generate_layout=True, verbose=False):
         self.n = n
         self.cell_range = range(1, self.n + 1)
         self.grid = tuple(tuple(Cell(self, r, c)
                                 for c in range(n + 2)) for r in range(n + 2))
         for i in range(self.n + 2):
-            self.grid[i][0].make_wall()
-            self.grid[i][self.n + 1].make_wall()
-            self.grid[0][i].make_wall()
-            self.grid[self.n + 1][i].make_wall()
+            self.grid[i][0].make_block()
+            self.grid[i][self.n + 1].make_block()
+            self.grid[0][i].make_block()
+            self.grid[self.n + 1][i].make_block()
         self.clear()
 
-        self.MAX_WALL = int(self.n ** 2 // 6)
-        self.MAX_WORDS = int(0.34 * self.n ** 2 - 0.3 * self.n + 4)
+        self.MAX_BLOCK = self.n**2//6
+        self.MAX_WORDS = int(0.23*self.n**2 + 2*self.n - 3)
+        self.MAX_CLUMP_SIZE = self.n//2
 
         if generate_layout:
+            custom_globals = {'self': self}
+            num_attempts = 0
+            failure_causes = {lengths: 0 for lengths in const.WORD_LENGTH_REQUIREMENTS}
             while True:
                 self.generate_layout()
                 self.number_cells()
-                if not self.is_connected() or \
-                        (n >= const.LARGE_GRID_CUTOFF and
-                            sum(e.length == n for e in self.entries) not in const.WORDS_LENGTH_N_RANGE) or \
-                        sum(e.length == 3 for e in self.entries) > self.MAX_WORDS * const.WORDS_LENGTH_3_MAX_PROP:
-                    self.clear()
-                else:
+                num_attempts += 1
+                length_req = True
+                if self.n >= const.LARGE_GRID_CUTOFF:
+                    for lengths, req in const.WORD_LENGTH_REQUIREMENTS.items():
+                        success = sum(e.length in eval(lengths, custom_globals) for e in self.entries) \
+                            in eval(req, custom_globals)
+                        if not success:
+                            failure_causes[lengths] += 1
+                            length_req = False
+                if self.is_connected and length_req:
+                    if verbose:
+                        print(f"attempts: {num_attempts}; failure counts: {failure_causes}")
                     break
+                else:
+                    self.clear()
 
     def cell(self, r: int, c: int) -> Cell | None:
-        if r < 0 or r >= len(self.grid) or c < 0 or c >= len(self.grid[0]):
-            return None
-        return self.grid[r][c]
+        in_bounds = (0 <= r <= len(self.grid)) and (
+            0 <= c <= len(self.grid[0]))
+        return self.grid[r][c] if in_bounds else None
 
     def clear(self) -> None:
         for i in self.cell_range:
@@ -77,53 +104,64 @@ class Grid:
                 self.cell(i, j).label = Cell.BLANK
         self.across = {}
         self.down = {}
-        self.ids = {}
         self.entries = []
+        self.ids = {}
 
     def generate_layout(self) -> None:
         """Generates a 2D array of Cells, subject to requirements on the number of 
-        walls and words and lengths of words it contains. Implemented via repeatedly 
-        adding walls that satisfy these requirements."""
-        curr_wall = 0
+        blocks and words and lengths of words it contains. Implemented via repeatedly 
+        adding blocks that satisfy these requirements."""
+        curr_block = 0
         curr_words = 2 * self.n
-        available_cells = [(i, j) for i in self.cell_range for j in
-                           self.cell_range]  # TODO: optimize to use set instead of list
+        curr_attempts = 0
+        attempt_limit = 0.5*self.n**2
+        available_cells = [(r, c) for r in self.cell_range for c in self.cell_range]
+        uf = UnionFind()
 
         def num_added_words(r: int, c: int) -> int:
-            """Returns the number of additional words that would be obtained by adding a wall at (r, c).
-
-            Args:
-                r: The row.
-                c: The column.
-
-            Returns:
-                The number of additional words that would be obtained by adding a wall at (r, c).
-            """
+            """Returns the number of additional words that would be obtained by adding a block at (r, c)."""
             return 2 - sum(
-                self.grid[r + direction.value.row][c + direction.value.col].is_wall() for direction in Cardinal)
+                self.grid[r + direction.value.row][c + direction.value.col].is_block() for direction in Cardinal)
 
-        def add_wall(r: int, c: int) -> None:
-            nonlocal curr_wall, curr_words
-            self.cell(r, c).make_wall()
-            curr_wall += 1
+        def add_block(r: int, c: int, block_neighbors: list[tuple[int, int]]) -> None:
+            nonlocal curr_block, curr_words
+            self.cell(r, c).make_block()
+            curr_block += 1
             curr_words += num_added_words(r, c)
             available_cells.remove((r, c))
+            uf.add((r, c))
+            for n in block_neighbors:
+                uf.union((r, c), n)
 
-        illegal_cells = []
-        if self.n in const.SYMMETRIC_SIZES and self.n % 2 == 1:
-            for i in range(int(-(const.MIN_WORD_LENGTH + 1) / 2), int((const.MIN_WORD_LENGTH + 1) / 2)):
-                illegal_cells.append((i + (self.n + 1) / 2, (self.n + 1) / 2))
-                illegal_cells.append(((self.n + 1) / 2, i + (self.n + 1) / 2))
+        if self.n in const.SYMMETRIC_SIZES:
+            if self.n % 2 == 1:
+                for i in range(-(const.MIN_WORD_LENGTH-1)//2, (const.MIN_WORD_LENGTH+1)//2):
+                    try:
+                        available_cells.remove((i + (self.n+1)//2, (self.n+1)//2))
+                        available_cells.remove(((self.n+1)//2, i + (self.n+1)//2))
+                    except ValueError:
+                        pass
+            else:
+                for i in (0, 1):
+                    for j in (0, 1):
+                        available_cells.remove((self.n//2 + i, self.n//2 + j))
 
-        while curr_wall < self.MAX_WALL and curr_words < self.MAX_WORDS:
+        while curr_block < self.MAX_BLOCK and curr_words < self.MAX_WORDS:
             r, c = available_cells[random.randint(0, len(available_cells) - 1)]
-            if all(self.cell(r, c).get_neighbor(cardinal_dir).is_wall()
+            curr_attempts += 1
+            if curr_attempts > attempt_limit:
+                break
+            if all(self.cell(r, c).get_neighbor(cardinal_dir).is_block()
                    or len(self.cell(r, c).in_direction(cardinal_dir)) > const.MIN_WORD_LENGTH
                    for cardinal_dir in Cardinal):
-                if (r, c) not in illegal_cells:
-                    add_wall(r, c)
-                    if self.n in const.SYMMETRIC_SIZES:
-                        add_wall(self.n + 1 - r, self.n + 1 - c)
+                if (r, c) in available_cells:
+                    curr_attempts = 0
+                    block_neighbors = set(uf) & set((r + dir.value.row, c + dir.value.col) for dir in Ordinal)                    
+                    adj_components = [uf.component(n) for n in block_neighbors]
+                    if len(set().union(*adj_components)) < self.MAX_CLUMP_SIZE:
+                        add_block(r, c, block_neighbors)
+                        if self.n in const.SYMMETRIC_SIZES:
+                            add_block(self.n + 1 - r, self.n + 1 - c, block_neighbors)
 
     def number_cells(self) -> None:
         """Assigns clue numbers to cells. Specifically, assigns `across`,
@@ -131,31 +169,29 @@ class Grid:
         identifier = 1
         for r in self.cell_range:
             for c in self.cell_range:
-                if self.cell(r, c).is_wall():
+                if self.cell(r, c).is_block():
                     continue
                 is_entry = False
-                if self.cell(r, c).get_neighbor(Cardinal.WEST).is_wall():
+                if self.cell(r, c).get_neighbor(Cardinal.WEST).is_block():
                     is_entry = True
                     self.across[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
-                    self.entries.append(
-                        Entry(self, self.cell(r, c).get_across()))
-                if self.cell(r, c).get_neighbor(Cardinal.NORTH).is_wall():
+                    self.entries.append(Entry(self, self.cell(r, c).get_across()))
+                if self.cell(r, c).get_neighbor(Cardinal.NORTH).is_block():
                     is_entry = True
                     self.down[identifier] = self.cell(r, c)
                     self.ids[(r, c)] = identifier
-                    self.entries.append(
-                        Entry(self, self.cell(r, c).get_down()))
+                    self.entries.append(Entry(self, self.cell(r, c).get_down()))
                 if is_entry:
                     identifier += 1
         self.entries.sort(key=lambda e: -e.length)
 
     def is_connected(self) -> bool:
         r, c = 1, 1
-        while self.cell(r, c).is_wall():
+        while self.cell(r, c).is_block():
             r = random.randint(1, self.n)
             c = random.randint(1, self.n)
-        num_not_wall = sum(not self.cell(i, j).is_wall()
+        num_not_block = sum(not self.cell(i, j).is_block()
                            for i in self.cell_range for j in self.cell_range)
         queue, visited = [], set()
         queue.append(self.cell(r, c))
@@ -165,31 +201,26 @@ class Grid:
             for cardinal_dir in Cardinal:
                 v = u.get_neighbor(cardinal_dir)
                 if 1 <= v.row <= self.n and 1 <= v.col <= self.n and \
-                        not v.is_wall() and v not in visited:
+                        not v.is_block() and v not in visited:
                     queue.append(v)
                     visited.add(v)
-        return len(visited) == num_not_wall
+        return len(visited) == num_not_block
 
     def is_filled(self) -> bool:
-        return all(not (self.cell(r, c).is_blank()) for c in self.cell_range for r in self.cell_range)
+        return all(not (self.cell(r, c).is_blank())
+                   for c in self.cell_range for r in self.cell_range)
 
-    def fill(self, clue_processor: ClueProcessor, num_attempts=10, num_sample_strings=20, num_test_strings=10,
+    def fill(self, clue_processor: ClueProcessor,
+             num_attempts=10, num_sample_strings=20, num_test_strings=10,
              time_limit=None, verbosity=0) -> None:
-        """Fills in the grid, roughly* in order of decreasing word length. TODO: make this faster!
+        """
+        Fills with letters to form words from clue_processor.words.
 
-        *We actually want words to be entered in order of the number of blank cells. However,
-        this is pretty annoying (and probably slow) to implement.
-
-        Args:
-            clue_processor: The clue processor.
-            num_attempts: Number of times grid tries filling from scratch.
-            num_sample_strings: Number of strings to sample per entry. A subset of this sample will be taken for
-                testing.
-            num_test_strings: Number of strings grid tests per entry.
-            verbosity: Proportion of the time things will print.
-
-        Returns:
-            None
+        num_attempts: Number of times grid tries filling from scratch.
+        num_sample_strings: Number of strings to sample per entry. A subset of this sample will
+            be taken for testing.
+        num_test_strings: Number of strings grid tests per entry.
+        verbosity: Proportion of the time things will print.
         """
 
         res: Grid | None = None
@@ -198,29 +229,17 @@ class Grid:
         start_time = time.perf_counter()
         print_every = int(1 / verbosity) if verbosity else 0
 
-        def intersection(sets: tuple[set[str]]) -> set[str]:
-            if len(sets) == 1:
-                return sets[0]
-            return sets[0].intersection(*sets[1:])
-
         # TODO: make faster
         @cache
         def constraints_intersection(length: int, constraints: tuple[tuple[int, str]]) -> set[str]:
-            return (
-                intersection(
-                    tuple(clue_processor.words[length][constraint] for constraint in constraints))
-                if len(constraints) > 0 else clue_processor.words[length]['all']
-            )
+            if constraints:
+                words = [clue_processor.words[length][constraint] for constraint in constraints]
+                return set.intersection(*words)
+            else:
+                return clue_processor.words[length]['all']
 
         def get_candidates(entry: Entry) -> set[str]:
-            """Returns a tuple of all possible words that fit the constraints of the entry.
-
-            Args:
-                entry: the entry
-
-            Returns:
-                A tuple of all possible words that fit the constraints of the entry.
-            """
+            """Returns a tuple of all possible words that fit the constraints of the entry."""
             constraints = tuple((i, entry.cells[i].label) for i in range(
                 entry.length) if not entry.cells[i].is_blank())
             return constraints_intersection(entry.length, constraints)
@@ -228,14 +247,12 @@ class Grid:
         def heuristic(e): return len(get_candidates(e))
 
         def helper(grid: Grid, entries: list[Entry]) -> Entry | None:
-            """Fills in one word at a time, proceeding by DFS.
+            """
+            Fills in one word at a time, proceeding by DFS.
 
             Returns:
                 An entry that failed to be filled, or None if all entries were filled.
             """
-            # TODO: set to list cast is slow!
-            # TODO: memoize get_across(), get_down() after layout is set
-
             nonlocal res
             if res:  # if solution already exists
                 return
@@ -338,9 +355,9 @@ class Grid:
 
 @dataclass(unsafe_hash=True)
 class Cell:
-    # WARNING: Cell.BLANK and Cell.WALL are NOT Cells!
+    # WARNING: Cell.BLANK and Cell.block are NOT Cells!
     BLANK: ClassVar[str] = "."
-    WALL: ClassVar[str] = "#"
+    block: ClassVar[str] = "#"
 
     grid: Final[Grid] = field(hash=True)
     row: Final[int] = field(hash=True)
@@ -351,18 +368,17 @@ class Cell:
         # allow memoization without memory leaks
         self.get_entry_list = lru_cache(maxsize=4)(self.get_entry_list)
 
-    def get_neighbor(self, cardinal_direction: Cardinal) -> Cell:
-        return self.grid.cell(self.row + cardinal_direction.value.row,
-                              self.col + cardinal_direction.value.col)
+    def get_neighbor(self, dir: Cardinal | Ordinal) -> Cell:
+        return self.grid.cell(self.row + dir.value.row, self.col + dir.value.col)
 
     def is_blank(self) -> bool:
         return self.label == Cell.BLANK
 
-    def is_wall(self) -> bool:
-        return self.label == Cell.WALL
+    def is_block(self) -> bool:
+        return self.label == Cell.block
 
-    def make_wall(self) -> None:
-        self.label = Cell.WALL
+    def make_block(self) -> None:
+        self.label = Cell.block
 
     def get_across(self) -> list[Cell]:
         """Across array of Cells containing self, ordered from left to right"""
@@ -385,19 +401,19 @@ class Cell:
         return self.get_across() if direction is Direction.ACROSS else self.get_down()
 
     def in_direction(self, cardinal_direction: Cardinal) -> list[Cell]:
-        """Returns a list of cells starting at self (inclusive) until hitting a wall.
+        """Returns a list of cells starting at self (inclusive) until hitting a block.
 
         Only used internally (for get_across and get_down).
         """
         res = []
         cur_cell = self
-        while not cur_cell.is_wall():
+        while not cur_cell.is_block():
             res.append(cur_cell)
             cur_cell = cur_cell.get_neighbor(cardinal_direction)
         return res
 
     def __repr__(self):
-        return f'Cell({self.row}, {self.col})'
+        return f'<Cell row={self.row} col={self.col} label={self.label}>'
 
 
 # TODO: there are many optimizations if all Entry.grid refer to the same grid (i.e. if Entry is an inner class of grid).
@@ -414,8 +430,8 @@ class Entry:
         self.length = len(self.cells)
 
         # TODO: fix possible bug if len(self.cells) <= 1
-        self.direction = Direction.ACROSS if len(self.cells) >= 2 and self.cells[0].row == self.cells[
-            1].row else Direction.DOWN
+        self.direction = Direction.ACROSS if len(self.cells) >= 2 and \
+            self.cells[0].row == self.cells[1].row else Direction.DOWN
 
         self.id = self.grid.ids[(self.cells[0].row, self.cells[0].col)]
 
