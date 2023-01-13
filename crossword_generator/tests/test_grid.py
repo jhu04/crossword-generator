@@ -1,4 +1,6 @@
+import argparse
 import os
+
 import generation.constants as const
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid
@@ -35,11 +37,11 @@ def test_clues(verbose=True):
     return clue_processor
 
 
-def main(results_path='tests/results'):
+def main(n, results_path='tests/results'):
+    """Tests grid layout and fill functionality."""
     import cProfile
     import pstats
 
-    n = 15
     success_path = os.path.join(results_path, f'{n}x{n}.txt')
     fail_path = os.path.join(results_path, f'{n}x{n}_failed.txt')
 
@@ -50,8 +52,9 @@ def main(results_path='tests/results'):
         while num_generated_grids < 10:
             print(f'Processing grid {i}')
             g = Grid(n)
-            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, num_test_strings=5,
-                   time_limit=10, verbosity=0.0001)  # TODO: find optimal num_test_strings, 10 seems good?
+            # TODO: find optimal num_test_strings, 10 seems good?
+            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, 
+                   num_test_strings=5, time_limit=10, verbosity=0.0001)  
 
             print(f'Processed grid {i}')
             print('Final grid:')
@@ -77,4 +80,8 @@ def main(results_path='tests/results'):
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', '--size', nargs='?', type=int, default=15)
+    args = parser.parse_args()
+
+    main(args.size)

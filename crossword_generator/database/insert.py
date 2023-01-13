@@ -1,14 +1,14 @@
 import os
 import argparse
-from dotenv import load_dotenv
-from pymongo import MongoClient
 import bson
 import bson.json_util
 import math
 import numpy as np
+from dotenv import load_dotenv
+from pymongo import MongoClient
 
-from database.documents import CrosswordBuilder, PublishType
 import generation.constants as const
+from database.documents import CrosswordBuilder, PublishType
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid
 

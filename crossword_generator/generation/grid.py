@@ -52,6 +52,47 @@ class Direction(Enum):
         return Direction.DOWN if self is Direction.ACROSS else Direction.ACROSS
 
 
+class Selector:
+    """Base class for 'selector' methods used in Grid.fill()."""
+    def __init__(self, heuristic_items: list[tuple[float, str]], 
+                    num_test_strings: int,
+                    fn: Callable([tuple[float, str]], tuple[float, str])):
+        self.heuristic_items = [fn(item) for item in heuristic_items]
+        self.num_test_strings = num_test_strings
+
+    def randomize(self, factor) -> None:
+        assert factor >= 1, "Randomization factor must be at least 1."
+        scores, words = zip(*self.heuristic_items)
+        randomize = lambda score: score * factor**random.uniform(-1, 1)
+        self.heuristic_items = list(zip(map(randomize, scores), words))
+    
+    def select(self) -> list[str]:
+        """
+        List of selected strings. By default, chooses those with the
+        highest fn(heuristic) scores.
+        """
+        return [word for _, word in sorted(self.heuristic_items, reverse=True)[:self.num_test_strings]]
+
+
+class ProbabilisticSelector(Selector):
+    """
+    Selector that chooses words with probabilities proportional to their
+    fn(heuristic) scores. The logic is the same as Selector, but introduces
+    systematic randomization for more varied word choice.
+    """
+    def __init__(self, *args):
+        super().__init__(*args)
+    
+    def select(self) -> list[str]:
+        if self.heuristic_items:
+            scores, words = zip(*self.heuristic_items)
+            norm_scores = np.array(scores) / sum(scores)
+            return list(np.random.choice(a=words, 
+                size=min(self.num_test_strings, len(self.heuristic_items)), replace=False, p=norm_scores))
+        else:
+            return []
+
+
 class Grid:
     """1-indexed n x n grid of Cells"""
 
@@ -121,9 +162,12 @@ class Grid:
         uf = UnionFind()
 
         def num_added_words(r: int, c: int) -> int:
-            """Returns the number of additional words that would be obtained by adding a block at (r, c)."""
-            return 2 - sum(self.grid[r + direction.value.row][c + direction.value.col].is_block()
-                for direction in Cardinal)
+            """
+            Returns the number of additional words that would be obtained by 
+            adding a block at (r, c).
+            """
+            return 2 - sum(self.grid[r + dir.value.row][c + dir.value.col].is_block()
+                for dir in Cardinal)
 
         def add_block(r: int, c: int, block_neighbors: list[tuple[int, int]]) -> None:
             nonlocal curr_block, curr_words
@@ -139,10 +183,8 @@ class Grid:
             if self.n % 2 == 1:
                 for i in range(-(const.MIN_WORD_LENGTH-1)//2, (const.MIN_WORD_LENGTH+1)//2):
                     try:
-                        available_cells.remove(
-                            (i + (self.n+1)//2, (self.n+1)//2))
-                        available_cells.remove(
-                            ((self.n+1)//2, i + (self.n+1)//2))
+                        available_cells.remove((i + (self.n+1)//2, (self.n+1)//2))
+                        available_cells.remove(((self.n+1)//2, i + (self.n+1)//2))
                     except ValueError:
                         pass
             else:
@@ -218,59 +260,24 @@ class Grid:
         return all(not (self.cell(r, c).is_blank())
                    for c in self.cell_range for r in self.cell_range)
 
-
-    class Selector:
-        def __init__(self, heuristic_items: list[tuple[float, str]], 
-                     num_test_strings: int,
-                     fn: Callable([tuple[float, str]], tuple[float, str])):
-            self.heuristic_items = [fn(item) for item in heuristic_items]
-            self.num_test_strings = num_test_strings
-
-        def randomize(self, factor) -> None:
-            assert factor >= 1
-            scores, words = zip(*self.heuristic_items)
-            randomize = lambda score: score * factor**random.uniform(-1, 1)
-            self.heuristic_items = list(zip(map(randomize, scores), words))
-        
-        def select(self) -> list[str]:
-            """
-            List of selected strings. By default, chooses those with the
-            highest fn(heuristic) scores.
-            """
-            return [word for _, word in sorted(self.heuristic_items, reverse=True)[:self.num_test_strings]]
-
-
-    class ProbabilisticSelector(Selector):
-        def __init__(self, *args):
-            super().__init__(*args)
-        
-        def select(self) -> list[str]:
-            """
-            Selects words with probabilities proportional to fn(heuristic) scores.
-            """
-            if self.heuristic_items:
-                scores, words = zip(*self.heuristic_items)
-                norm_scores = np.array(scores) / sum(scores)
-                return list(np.random.choice(a=words, 
-                    size=min(self.num_test_strings, len(self.heuristic_items)), replace=False, p=norm_scores))
-            else:
-                return []
-
-
     def fill(self, clue_processor: ClueProcessor,
              num_attempts=10, num_sample_strings=20, num_test_strings=10,
              time_limit=None, verbosity=0,
              selector_class: type[Selector] = Selector,
-             fn: Callable([tuple[int, str]], tuple[int, str]) = lambda x: x) -> None:
+             fn: Callable([tuple[int, str]], tuple[int, str]) = lambda x: x,
+             randomize_factor=1) -> None:
         """
         Fills with letters to form words from clue_processor.words.
 
-        num_attempts: Number of times grid tries filling from scratch.
+        Arguments
+        ---------
+        num_attempts:       Number of times grid tries filling from scratch.
         num_sample_strings: Number of strings to sample per entry. A subset of 
-            this sample will be taken for testing.
-        num_test_strings: Number of strings grid tests per entry.
-        verbosity: Proportion of the time things will print.
-        fn: Function applied to Selector.
+                            this sample will be taken for testing.
+        num_test_strings:   Number of strings grid tests per entry.
+        verbosity:          Proportion of the time things will print.
+        fn:                 Function applied to Selector.
+        randomize_factor:   Randomization factor applied to Selector.
         """
         res: Grid | None = None
         used_words = set()
@@ -346,21 +353,23 @@ class Grid:
                 for cell in previously_blank_cells:  # backtrack
                     cell.label = Cell.BLANK
 
-            selected_words = selector_class(heuristic_items, num_test_strings, fn).select()
-            for word in selected_words:
-                previously_blank_cells = []
-                for i in range(entry.length):
-                    if entry.cells[i].label == Cell.BLANK:
-                        previously_blank_cells.append(entry.cells[i])
-                        entry.cells[i].label = word[i]
-                used_words.add(word)
+            if heuristic_items:
+                selector = selector_class(heuristic_items, num_test_strings, fn)
+                selector.randomize(randomize_factor)
+                for word in selector.select():
+                    previously_blank_cells = []
+                    for i in range(entry.length):
+                        if entry.cells[i].label == Cell.BLANK:
+                            previously_blank_cells.append(entry.cells[i])
+                            entry.cells[i].label = word[i]
+                    used_words.add(word)
 
-                failed_entry = helper(grid, entries[1:])
-                for cell in previously_blank_cells:  # backtrack
-                    cell.label = Cell.BLANK
-                used_words.remove(word)
-                if not entries[0].intersects(failed_entry):  # backjump
-                    break
+                    failed_entry = helper(grid, entries[1:])
+                    for cell in previously_blank_cells:  # backtrack
+                        cell.label = Cell.BLANK
+                    used_words.remove(word)
+                    if not entries[0].intersects(failed_entry):  # backjump
+                        break
 
             return entries[0]
 
@@ -385,9 +394,9 @@ class Grid:
 
 @dataclass(unsafe_hash=True)
 class Cell:
-    # WARNING: Cell.BLANK and Cell.block are NOT Cells!
+    # WARNING: Cell.BLANK and Cell.BLOCK are NOT Cells!
     BLANK: ClassVar[str] = "."
-    block: ClassVar[str] = "#"
+    BLOCK: ClassVar[str] = "#"
 
     grid: Final[Grid] = field(hash=True)
     row: Final[int] = field(hash=True)
@@ -405,10 +414,10 @@ class Cell:
         return self.label == Cell.BLANK
 
     def is_block(self) -> bool:
-        return self.label == Cell.block
+        return self.label == Cell.BLOCK
 
     def make_block(self) -> None:
-        self.label = Cell.block
+        self.label = Cell.BLOCK
 
     def get_across(self) -> list[Cell]:
         """Across array of Cells containing self, ordered from left to right"""
@@ -437,7 +446,7 @@ class Cell:
 @dataclass()
 class Entry:
     """
-
+    Stores a grid entry, i.e. a list of Cells.
 
     TODO: there are many optimizations if all Entry.grid refer to the same grid 
           (i.e. if Entry is an inner class of grid). Currently, some methods use

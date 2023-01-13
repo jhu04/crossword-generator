@@ -19,9 +19,12 @@ class CollectiveClueProcessor:
 class ClueProcessor:
     """
     Processes clue data from a csv.
-        clues: DataFrame storing clues and answers.
-        words: Dictionary mapping lengths to dictionaries, which map 
-               (pos, char) pairs to lists.
+
+    Attributes
+    ----------
+    clues: DataFrame storing clues and answers.
+    words: Dictionary mapping lengths to dictionaries, which map 
+           (pos, char) pairs to lists.
 
     TODO: currently only processes words for which there exists an associated
     old clue. update this if/when we generate clues ourselves.
