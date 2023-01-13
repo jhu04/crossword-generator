@@ -2,6 +2,7 @@ import os
 import argparse
 import csv
 import numpy as np
+import pandas as pd
 import time
 from tqdm import tqdm
 from sklearn.feature_extraction.text import CountVectorizer
@@ -10,6 +11,7 @@ import generation.constants as const
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid, Selector, ProbabilisticSelector
 
+results_path ='tests/results'
 
 class FillTester:
     """Tests grid fill efficiency to determine optimal parameters. TODO: Clean code."""
@@ -71,7 +73,7 @@ class FillTester:
                                            word_similarity])
 
         for n in self.params['n_range']:
-            path = os.path.join(self.params['write_path'], f"{n}x{n}_param_results.csv")
+            path = os.path.join(results_path, f"{n}x{n}_param_results.csv")
             if overwrite or not os.path.exists(path):
                 with open(path, 'w', newline='') as file:
                     csv.writer(file).writerow(FillTester.columns)
@@ -114,8 +116,8 @@ class FillTester:
         U, s, V = np.linalg.svd(counts)
         return (s[0]**2-1) / (len(grids)-1)
 
-
-if __name__ == '__main__':
+    
+def write():
     parser = argparse.ArgumentParser()
     parser.add_argument('--generate-num', nargs='?', type=int, default=10)
     parser.add_argument('--n-range', nargs='*', type=int, default=[5, 7, 9, 11, 13, 15])
@@ -132,7 +134,6 @@ if __name__ == '__main__':
     selectors = [eval(s.lower(), selector_map) for s in args.selectors]
 
     tester = FillTester(generate_num=args.generate_num,
-                        write_path='tests/results',
                         n_range=args.n_range,
                         num_attempts_range=args.num_attempts_range,
                         num_sample_strings_range=args.num_sample_range,
@@ -142,3 +143,26 @@ if __name__ == '__main__':
                         fns_str=args.fns,
                         randomize_factors=args.randomize_factors)
     tester.test_efficiency(overwrite=True, verbose=True)
+
+def postprocess():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', '--sizes', nargs='+', type=int, default=[5, 7, 9, 11, 13, 15])
+    args = parser.parse_args()
+
+    if not args.sizes:
+        raise ValueError('Provide at least one grid size to postprocess.')
+    
+    params = ['num_attempts', 'num_sample_strings', 'num_test_strings', 'time_limit',
+              'selector', 'fn', 'randomize_factor']
+    performance = [col for col in FillTester.columns if col not in set(params)]
+
+    for n in args.sizes:
+        df = pd.read_csv(os.path.join(results_path, f"{n}x{n}_param_results.csv"))
+        with open(os.path.join(results_path, f"{n}x{n}_summary.txt"), 'w') as f:
+            for col in params:
+                f.write(str(df[[col, *performance]].groupby(col).mean()) + '\n'*4)
+
+
+if __name__ == '__main__':
+    # write()
+    postprocess()

@@ -115,8 +115,7 @@ class Grid:
         if generate_layout:
             custom_globals = {'self': self}
             num_attempts = 0
-            failure_causes = {
-                lengths: 0 for lengths in const.WORD_LENGTH_REQUIREMENTS}
+            failure_causes = {lengths: 0 for lengths in const.WORD_LENGTH_REQUIREMENTS}
             while True:
                 self.generate_layout()
                 self.number_cells()
@@ -208,8 +207,7 @@ class Grid:
                     if len(set().union(*adj_components)) < self.MAX_CLUMP_SIZE:
                         add_block(r, c, block_neighbors)
                         if self.n in const.SYMMETRIC_SIZES:
-                            add_block(self.n + 1 - r, self.n +
-                                      1 - c, block_neighbors)
+                            add_block(self.n + 1 - r, self.n + 1 - c, block_neighbors)
 
     def number_cells(self) -> None:
         """Assigns clue numbers to cells. Specifically, assigns `across`,
@@ -262,7 +260,7 @@ class Grid:
 
     def fill(self, clue_processor: ClueProcessor,
              num_attempts=10, num_sample_strings=20, num_test_strings=10,
-             time_limit=None, verbosity=0,
+             time_limit=float('inf'), verbosity=0,
              selector_class: type[Selector] = Selector,
              fn: Callable([tuple[int, str]], tuple[int, str]) = lambda x: x,
              randomize_factor=1) -> None:
@@ -322,7 +320,7 @@ class Grid:
             if counter % print_every == 0:
                 print(grid, '\n')
 
-            if time_limit and time.perf_counter() - start_time > time_limit:
+            if time.perf_counter() - start_time > time_limit:
                 return
 
             entries.sort(key=heuristic)

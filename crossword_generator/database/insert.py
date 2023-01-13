@@ -64,7 +64,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.sizes:
-        raise Exception('Provide at least one grid size to generate.')
+        raise ValueError('Provide at least one grid size to generate.')
     if args.type.lower() == 'daily':
         publish_type = PublishType.DAILY
     elif args.type.lower() == 'free':
