@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 
 import { Clue } from 'components/Clue/Clue';
 
-
 import css from './ClueList.scss';
 
 
