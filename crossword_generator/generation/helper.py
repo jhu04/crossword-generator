@@ -17,3 +17,7 @@ def union(A, B):
         return {k: union(A[k], B[k]) for k in A}
     else:
         raise ValueError('Inputs do not have the same object structure.')
+
+def merge_sum(A: dict[int], B: dict[int]) -> dict[int]:
+    """Sum of 'merged' dictionaries A, B."""
+    return {k: A.get(k, 0) + B.get(k, 0) for k in set(A) | set(B)}
