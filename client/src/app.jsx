@@ -13,6 +13,7 @@ import Home from 'pages/Home/Home';
 import Puzzle from 'pages/Puzzle/Puzzle';
 import NotFound from 'pages/NotFound/NotFound';
 import Loading from './pages/Loading/Loading';
+import css from './index.scss';
 
 function App() {
   const [freeModeSize, setFreeModeSize] = useState(0);
