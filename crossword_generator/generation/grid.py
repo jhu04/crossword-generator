@@ -130,7 +130,8 @@ class Grid:
                             length_req = False
                 if self.is_connected and length_req:
                     if verbose:
-                        print(f"attempts: {num_attempts}; failure counts: {failure_causes}")
+                        failure_causes_str = {eval(k, custom_globals): v for k, v in failure_causes.items()}
+                        print(f"attempts: {num_attempts}; failure counts: {failure_causes_str}")
                     break
                 else:
                     self.clear()

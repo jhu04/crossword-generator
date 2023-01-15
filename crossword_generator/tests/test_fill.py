@@ -1,18 +1,19 @@
 import os
 import argparse
 import csv
-from datetime import datetime
+import functools
 import math
 import numpy as np
 import pandas as pd
 import time
+from datetime import datetime
 from sklearn.feature_extraction.text import CountVectorizer
 from tqdm import tqdm
 
 import generation.constants as const
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid, Selector, ProbabilisticSelector
-from generation.helper import collapse, merge_sum
+from generation.helper import merge_sum
 
 results_path = 'tests/results'
 
@@ -112,7 +113,7 @@ class FillTester:
                                             )
                                         reused_words.append(self.test_individual(locals()))
             
-            _postprocess(n, collapse(merge_sum)(reused_words))
+            _postprocess(n, functools.reduce(merge_sum, reused_words))
 
 
     def test_word_similarity(self, grids: list[Grid]):

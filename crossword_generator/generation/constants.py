@@ -8,7 +8,7 @@ MAX_SIZE = 21
 MIN_WORD_LENGTH = 3
 LARGE_GRID_CUTOFF = 11
 WORD_LENGTH_REQUIREMENTS = {
-    '(3,)': 'range(0, int(0.25 * self.MAX_WORDS))',
+    '(3,)': 'range(0, int(0.18 * self.MAX_WORDS + 5.4))',
     '(4,)': 'range(0, int(0.4 * self.MAX_WORDS))',
     '(self.n-2, self.n-1, self.n)': 'range(1, 5)'
 }
@@ -38,6 +38,11 @@ CLUE_SOURCES = [
     },
     {
         'file_name': 'ginsberg-puns' + FILENAME_SUFFIX + '.csv',
+        'filter': lambda _: True,
+        'delimeter': ','
+    },
+    {
+        'file_name': 'scraped-clues-xwordinfo' + FILENAME_SUFFIX + '.csv',
         'filter': lambda _: True,
         'delimeter': ','
     }

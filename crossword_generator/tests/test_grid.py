@@ -1,30 +1,37 @@
 import argparse
 import os
+import pandas as pd
+import time
+from tqdm import tqdm
 
 import generation.constants as const
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid
 
 
-def test_grid_layout_generation(size=7, verbose=True):
+def test_layout_generation(size=7, verbose=True):
     if verbose:
         for n in const.SIZE_RANGE:
-            print(n)
-            print(Grid(n, verbose=verbose))
-            print()
+            print(str(n) + '\n' + str(Grid(n, verbose=True)) + '\n\n')
 
     g = Grid(size)
-
-    print('Testing grid:')
-    print(g)
-    print()
-
-    if verbose:
-        print(f"{g.across}\n{g.down}")
-        print()
+    print('Testing grid:\n' + str(g) + '\n\n')
+    print(str(g.across) + '\n' + str(g.down) + '\n\n')
 
     return g
 
+
+def test_layout_efficiency(size, num_iters=100):
+    runtimes = []
+    for i in range(num_iters):
+        print('iteration', i)
+        start = time.perf_counter()
+        Grid(size, verbose=True)
+        runtime = time.perf_counter() - start
+        print('time:', runtime)
+        runtimes.append(runtime)
+    
+    print(pd.DataFrame(runtimes, columns=['runtime']).describe())
 
 def test_clues(verbose=True):
     for source in const.CLUE_SOURCES:
@@ -82,6 +89,9 @@ def main(n, results_path='tests/results'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--size', nargs='?', type=int, default=15)
+    parser.add_argument('-it', '--num-iters', nargs='?', type=int, default=100)
     args = parser.parse_args()
 
-    main(args.size)
+    # test_layout_generation()
+    test_layout_efficiency(args.size, args.num_iters)
+    # main(args.size)
