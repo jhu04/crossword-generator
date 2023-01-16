@@ -45,7 +45,8 @@ function App() {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
       .then((res) => {
         if (res.data.length) {
-          setSelectedFreeModeCrossword(sample(res.data)._id);
+          setSelectedFreeModeCrossword(sample(res.data));
+          console.log(res.data);
         }
       })
       .catch((err) => console.error(err.toJSON()));
