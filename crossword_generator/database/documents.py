@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from random import randrange
 
-import generation.constants as const
+import database.constants as db_const
+import generation.constants as gen_const
 from generation.clue_processor import ClueProcessor
 from generation.grid import Grid, Cell, Direction
 
@@ -16,6 +17,7 @@ class PuzzleMetadata:
     title: str
     printDate: str
     printDotw: int | None
+    dailyDate: datetime.datetime | None
     editor: str | None
     height: int
     width: int
@@ -74,11 +76,13 @@ class CrosswordBuilder:
     grid: Grid
     clue_processor: ClueProcessor
     publish_type: PublishType
+    daily_date: datetime.datetime | None
 
     def __post_init__(self):
         if self.publish_type is PublishType.DAILY:
-            assert self.grid.n in const.DAILY_MINI_SIZES or \
-                self.grid.n in const.DAILY_MAXI_SIZES
+            valid_sizes = set(gen_const.DAILY_MINI_SIZES + gen_const.DAILY_MAXI_SIZES)
+            assert self.grid.n in valid_sizes, \
+                f'{self.grid.n} is invalid size for daily puzzles; choices: {valid_sizes}'
 
     def cell_to_index(self, cell: Cell):
         return self.grid.n * (cell.row - 1) + (cell.col - 1)
@@ -117,15 +121,14 @@ class CrosswordBuilder:
         return answers
 
     def build(self) -> Crossword:
-        today = datetime.date.today().strftime('%Y-%m-%d')
+        today = datetime.date.today().strftime(db_const.DATE_FORMAT)
+        daily_date_str = None if self.daily_date is None else \
+            self.daily_date.strftime(db_const.DATE_FORMAT)
         if self.publish_type is PublishType.DAILY:
-            if self.grid.n in const.DAILY_MINI_SIZES:
+            if self.grid.n in gen_const.DAILY_MINI_SIZES:
                 title = 'The Daily Mini'
-            elif self.grid.n in const.DAILY_MAXI_SIZES:
+            else:  # if self.grid.n in const.DAILY_MAXI_SIZES:
                 title = 'The Daily Maxi'
-            else:
-                raise Exception(
-                    f'{self.grid.n} is invalid size for daily puzzles')
         elif self.publish_type is PublishType.FREE:
             title = 'Free Mode'
         else:
@@ -141,6 +144,7 @@ class CrosswordBuilder:
                 title=title,
                 printDate=today,
                 printDotw=None,
+                dailyDate=daily_date_str,
                 editor=None,
                 height=self.grid.n,
                 width=self.grid.n,
