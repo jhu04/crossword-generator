@@ -7,7 +7,8 @@ router.get('/api/size/:size', async (req, res) => {
   const query = { "puzzle_meta.height": size, "puzzle_meta.width": size };
   try {
     const puzzles = await model.find(query);
-    res.status(200).json(puzzles);
+    const puzzle_ids = await Promise.all(puzzles.map(async ({ _id }) => _id));
+    res.status(200).json(puzzle_ids);
   } catch (err) {
     res.json(err);
   }
@@ -26,7 +27,6 @@ const getOne = async (res, query) => {
   }
 }
 
-// TODO: clean code
 router.get('/api/daily/:type/:date', async (req, res) => {
   if (['mini', 'maxi'].includes(req.params.type)) {
     const mini_sizes = [5];
@@ -44,7 +44,6 @@ router.get('/api/daily/:type/:date', async (req, res) => {
   }
 });
 
-// TODO: clean code
 router.get('/api/id/:id', async (req, res) => {
   if (ObjectId.isValid(req.params.id)) {
     const query = { _id: ObjectId(req.params.id) };
