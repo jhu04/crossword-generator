@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
   Route,
   Redirect
@@ -9,6 +9,7 @@ import Axios from 'axios';
 import sample from 'lodash/sample';
 
 import Header from 'components/Header/Header';
+import About from './pages/About/About';
 import Home from 'pages/Home/Home';
 import Puzzle from 'pages/Puzzle/Puzzle';
 import NotFound from 'pages/NotFound/NotFound';
@@ -17,23 +18,39 @@ import css from './index.scss';
 
 function App() {
   const [freeModeSize, setFreeModeSize] = useState(0);
-  const [selectedCrossword, setSelectedCrossword] = useState(null);
+  const [dailyMini, setDailyMini] = useState(null);
+  const [dailyMaxi, setDailyMaxi] = useState(null);
+  const [selectedFreeModeCrossword, setSelectedFreeModeCrossword] = useState(null);
+
+  const day = String(new Date().getUTCDate()).padStart(2, '0');
+  const month = String(new Date().getUTCMonth() + 1).padStart(2, '0');
+  const year = new Date().getUTCFullYear();
+  const today = `${year}-${month}-${day}`
+
   const SERVER_URL =
     (process.env.NODE_ENV === 'production')
       ? 'https://crossify-server.vercel.app'
       : 'http://localhost:5001'; // TODO: fix env variables in deployment
 
   useEffect(() => {
+    Axios.get(`${SERVER_URL}/api/daily/mini/${today}`)
+      .then((res) => setDailyMini(res.data._id))
+      .catch((err) => console.error(err.toJSON()));
+    Axios.get(`${SERVER_URL}/api/daily/maxi/${today}`)
+      .then((res) => setDailyMaxi(res.data._id))
+      .catch((err) => console.error(err.toJSON()));
+  }, []);
+
+  useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
       .then((res) => {
         if (res.data.length) {
-          setSelectedCrossword(sample(res.data)._id);
+          setSelectedFreeModeCrossword(sample(res.data)._id);
         }
       })
       .catch((err) => console.error(err.toJSON()));
   }, [freeModeSize]);
 
-  // TODO: update mini/, maxi/
   return (
     <Router>
       <main>
@@ -42,25 +59,34 @@ function App() {
           <Route exact path="/">
             <Home setFreeModeSize={setFreeModeSize} />
           </Route>
-          <Route exact path="/puzzle/:puzzleId"
+          <Route exact path="/about" component={About} />
+          <Route exact path="/:puzzleId"
             render={(props) => (
               <Puzzle
                 setFreeModeSize={setFreeModeSize}
-                setSelectedCrossword={setSelectedCrossword}
+                setSelectedFreeModeCrossword={setSelectedFreeModeCrossword}
                 {...props}
               />
             )}
           />
-          <Route exact path="/puzzle/daily/mini">
-            <Redirect to="/puzzle/63a97dc765e5479584855cbf" />
-          </Route>
-          <Route exact path="/puzzle/daily/maxi">
-            <Redirect to="/puzzle/63a97e2564ec9287d7ac5485" />
-          </Route>
-          <Route exact path="/puzzle/free/redirect">
+          <Route exact path="/daily/mini">
             {
-              selectedCrossword
-                ? <Redirect to={`/puzzle/${selectedCrossword}`} />
+              dailyMini
+                ? <Redirect to={`/${dailyMini}`} />
+                : <Loading />
+            }
+          </Route>
+          <Route exact path="/daily/maxi">
+            {
+              dailyMaxi
+                ? <Redirect to={`/${dailyMaxi}`} />
+                : <Loading />
+            }
+          </Route>
+          <Route exact path="/free/redirect">
+            {
+              selectedFreeModeCrossword
+                ? <Redirect to={`/${selectedFreeModeCrossword}`} />
                 : <Loading />
             }
           </Route>

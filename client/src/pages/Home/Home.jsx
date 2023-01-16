@@ -13,7 +13,7 @@ function Home({ setFreeModeSize }) {
 
   function FreeModeButton(freeModeSize) {
     return (
-      <Link to={'/puzzle/free/redirect'}>
+      <Link to={'/free/redirect'}>
         <div className={css.button} onClick={() => {
           setFreeModeSize(freeModeSize);
         }}>
@@ -32,12 +32,12 @@ function Home({ setFreeModeSize }) {
           <h2 className={css.date}>{dayOfWeek}, {month} {day}, {year}</h2>
           <div className={css.buttonGroup}>
             <div className={css.buttonRow}>
-              <Link to="/puzzle/daily/mini">
+              <Link to="/daily/mini">
                 <div className={css.button}>
                   Mini
                 </div>
               </Link>
-              <Link to="/puzzle/daily/maxi">
+              <Link to="/daily/maxi">
                 <div className={css.button}>
                   Maxi
                 </div>

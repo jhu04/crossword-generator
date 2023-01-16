@@ -18,7 +18,10 @@ class PuzzleHeader extends React.Component {
       author = `By ${author}`;
     }
 
-    const [year, month, day] = this.props.printDate.split("-");
+    const date = this.props.publishType === 'Daily'
+                   ? this.props.dailyDate
+                   : this.props.printDate;
+    const [year, month, day] = date.split("-");
 
     return (
       <div className={css.headerContainer}>

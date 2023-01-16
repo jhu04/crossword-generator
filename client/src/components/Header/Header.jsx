@@ -11,9 +11,9 @@ export default function Header() {
       <Link to="/">
         <img src={logo} alt="Logo" />
       </Link>
-      <a href="https://github.com/jhu04/crossword-generator" target="_blank">
-        <GithubIcon />
-      </a>
+      <Link to="/about" className={css.nav_link}>
+        About
+      </Link>
     </div>
   );
 }

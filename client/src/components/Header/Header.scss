@@ -13,10 +13,19 @@
   flex: 0 1 auto;
 }
 
-img {
-  display: inline-block;
+img, svg {
   height: 32px;
-  width: auto;
+}
+
+.nav_link {
+  font-size: 22px;
+  font-weight: 500;
+  color: black;
+  transition-duration: 150ms;
+}
+
+.nav_link:hover {
+  color: #0a58a7;
 }
 
 @media (max-width: 600px) {
@@ -27,7 +36,7 @@ img {
   img {
     height: 24px;
   }
-  svg {
-    height: 24px;
+  .nav_link {
+    font-size: 16px;
   }
 }

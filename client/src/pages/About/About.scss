@@ -1,0 +1,28 @@
+h1 {
+  font-size: 48px;
+  line-height: 48px;
+  font-weight: 800;
+}
+
+.wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+}
+
+.content {
+  max-width: 800px;
+}
+
+.textLink {
+  color: #0a58a7;
+  font-weight: 600;
+}
+
+.textLink:hover {
+  background-color: #e0f2fe;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+}

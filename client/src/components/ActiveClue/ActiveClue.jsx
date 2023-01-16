@@ -34,7 +34,6 @@ class ActiveClue extends React.Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { activeCellNumber, activeDirection, cells, clues } = state.puzzle[ownProps.puzzleId] || {};
-  // console.log(activeCellNumber, activeDirection, cells, clues);
 
   if (['start', 'pause'].includes(state.modal.activeModal)) {
     return {
