@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+mongoose.set('strictQuery', true);
 const cors = require('cors');
 require('dotenv-expand').expand(require('dotenv').config()).parsed;
 
