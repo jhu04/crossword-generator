@@ -1,34 +1,19 @@
+"""Generates and inserts puzzles into database."""
+
 import os
 import argparse
-import bson
-import bson.json_util
 import datetime
 import math
 import numpy as np
 import pymongo
-import random
 import warnings
 
 import database.constants as db_const
 import generation.constants as gen_const
 from database.documents import CrosswordBuilder, PublishType
+from database.helper import to_bson
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid
-
-
-
-def to_bson(obj):
-    """Recursively converts this document to a dictionary representation.
-
-    See https://stackoverflow.com/a/48413290 for implementation details.
-
-    Args:
-        obj: the object to be recursively represented as a dictionary
-
-    Returns:
-        A dictionary representation of this object.
-    """
-    return bson.json_util.loads(bson.json_util.dumps(obj, default=lambda o: o.__dict__))
 
 
 def main(sizes, num_grids, publish_type, select_props=lambda _: 1):
@@ -45,13 +30,13 @@ def main(sizes, num_grids, publish_type, select_props=lambda _: 1):
 
         if grid.is_filled():
             crossword = CrosswordBuilder(grid, clue_processor, publish_type, daily_date).build()
-            db_const.COLLECTION.insert_one(to_bson(crossword))
+            db_const.PUZZLE_COLLECTION.insert_one(to_bson(crossword))
             print(f'Inserted above crossword; size {n}.\n')
 
     if publish_type is PublishType.DAILY:
-        docs = db_const.COLLECTION.find({'puzzle_meta.publishType': PublishType.DAILY.value}) \
-                                  .sort('_id', pymongo.DESCENDING) \
-                                  .limit(2)
+        docs = db_const.PUZZLE_COLLECTION.find({'puzzle_meta.publishType': PublishType.DAILY.value}) \
+                                         .sort('_id', pymongo.DESCENDING) \
+                                         .limit(2)
         latest_dates = [datetime.datetime.strptime(
             doc['puzzle_meta']['dailyDate'], db_const.DATE_FORMAT) for doc in docs]
         assert len(latest_dates) <= 2

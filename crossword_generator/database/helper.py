@@ -1,6 +1,23 @@
 """Non-specific helper methods."""
 import sys
+import bson
+import bson.json_util
 from distutils.util import strtobool
+
+
+def to_bson(obj):
+    """Recursively converts this document to a dictionary representation.
+
+    See https://stackoverflow.com/a/48413290 for implementation details.
+
+    Args:
+        obj: the object to be recursively represented as a dictionary
+
+    Returns:
+        A dictionary representation of this object.
+    """
+    return bson.json_util.loads(bson.json_util.dumps(obj, default=lambda o: o.__dict__))
+
 
 def query_yes_no(question, default="yes"):
     """
