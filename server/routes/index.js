@@ -1,24 +1,12 @@
 const router = require('express').Router();
-const model = require('../models/model');
+const { puzzleModel, idModel } = require('../models/models');
 const ObjectId = require('mongodb').ObjectId;
 
-router.get('/api/size/:size', async (req, res) => {
-  const size = parseInt(req.params.size);
-  const query = { "puzzle_meta.height": size, "puzzle_meta.width": size };
+const getOne = async (model, res, query) => {
   try {
-    const puzzles = await model.find(query);
-    const puzzle_ids = await Promise.all(puzzles.map(async ({ _id }) => _id));
-    res.status(200).json(puzzle_ids);
-  } catch (err) {
-    res.json(err);
-  }
-});
-
-const getOne = async (res, query) => {
-  try {
-    const puzzles = await model.findOne(query);
-    if (puzzles) {
-      res.status(200).json(puzzles);
+    const documents = await model.findOne(query);
+    if (documents) {
+      res.status(200).json(documents);
     } else {
       res.sendStatus(404);
     }
@@ -26,6 +14,11 @@ const getOne = async (res, query) => {
     res.json(err);
   }
 }
+
+router.get('/api/size/:size', async (req, res) => {
+  const query = { _id: `size_${req.params.size}` };
+  getOne(idModel, res, query);
+});
 
 router.get('/api/daily/:type/:date', async (req, res) => {
   if (['mini', 'maxi'].includes(req.params.type)) {
@@ -38,7 +31,7 @@ router.get('/api/daily/:type/:date', async (req, res) => {
       "puzzle_meta.height": requirement,
       "puzzle_meta.width": requirement
     };
-    getOne(res, query);
+    getOne(puzzleModel, res, query);
   } else {
     res.sendStatus(404);
   }
@@ -47,7 +40,7 @@ router.get('/api/daily/:type/:date', async (req, res) => {
 router.get('/api/id/:id', async (req, res) => {
   if (ObjectId.isValid(req.params.id)) {
     const query = { _id: ObjectId(req.params.id) };
-    getOne(res, query);
+    getOne(puzzleModel, res, query);
   } else {
     res.sendStatus(404);
   }

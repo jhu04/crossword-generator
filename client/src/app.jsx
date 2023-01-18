@@ -44,9 +44,8 @@ function App() {
   useEffect(() => {
     Axios.get(`${SERVER_URL}/api/size/${freeModeSize}`)
       .then((res) => {
-        if (res.data.length) {
-          setSelectedFreeModeCrossword(sample(res.data));
-          console.log(res.data);
+        if (res.data) {
+          setSelectedFreeModeCrossword(sample(res.data.puzzle_id_list));
         }
       })
       .catch((err) => console.error(err.toJSON()));
