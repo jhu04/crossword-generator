@@ -45,8 +45,8 @@ class Ordinal(Enum):
 
 
 class Direction(Enum):
-    ACROSS = auto()
-    DOWN   = auto()
+    ACROSS = 'across'
+    DOWN = 'down'
 
     def opposite(self):
         return Direction.DOWN if self is Direction.ACROSS else Direction.ACROSS
