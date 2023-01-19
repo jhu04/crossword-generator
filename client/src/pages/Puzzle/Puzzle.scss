@@ -29,16 +29,19 @@
 }
 
 .gridContainer {
-  position: sticky;
-  top: 56px;
-  right: 24px;
   padding: 20px;
 }
 
+/*
+Desired wrapping behavior achieved via
+https://stackoverflow.com/questions/43680242/set-wrapping-priority-between-primary-and-nested-flex-containers
+*/
 .cluesContainer {
   position: relative;
   display: flex;
   flex-wrap: wrap;
+  flex-grow: 1;
+  flex-basis: 0;
   //overscroll-behavior: contain;
 }
 
