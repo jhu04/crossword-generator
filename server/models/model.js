@@ -5,7 +5,9 @@ const schema = new mongoose.Schema({
   "_id": ObjectId,
   "puzzle_meta": {
     "height": Number,
-    "width": Number
+    "width": Number,
+    "publishType": String,
+    "dailyDate": String
   }
 }, { collection: process.env.COLLECTION });
 
