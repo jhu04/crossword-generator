@@ -11,9 +11,9 @@ import warnings
 import database.constants as db_const
 import generation.constants as gen_const
 from database.documents import CrosswordBuilder, PublishType
-from database.helper import to_bson
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid
+from helper import to_bson
 
 
 def main(sizes, num_grids, publish_type, select_props=lambda _: 1):
@@ -24,8 +24,8 @@ def main(sizes, num_grids, publish_type, select_props=lambda _: 1):
     def helper(n, daily_date):
         """Helper method for grid generation and insertion."""
         grid = Grid(n)
-        grid.fill(clue_processor, num_attempts=10, num_sample_strings=10,
-                  num_test_strings=5, time_limit=10, verbosity=0.001)
+        grid.fill(clue_processor, num_attempts=100, num_sample_strings=10,
+                  num_test_strings=5, time_limit=gen_const.TIME_LIMIT[n], verbosity=0.001)
         print(f'Generated grid:\n{str(grid)}\n')
 
         if grid.is_filled():

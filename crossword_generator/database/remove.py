@@ -1,6 +1,6 @@
 import database.constants as const
 from database.documents import PublishType
-from database.helper import query_yes_no
+from helper import query_yes_no
 
 
 def remove(publish_type):

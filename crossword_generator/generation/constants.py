@@ -2,7 +2,7 @@ import json
 import os
 import string
 
-"""Grid generation"""
+"""Grid layout generation"""
 MIN_SIZE = 4
 MAX_SIZE = 21
 MIN_WORD_LENGTH = 3
@@ -19,6 +19,17 @@ WORD_LENGTH_RANGE = range(MIN_WORD_LENGTH, MAX_SIZE + 1)
 SYMMETRIC_SIZES = range(LARGE_GRID_CUTOFF, MAX_SIZE + 1)
 DAILY_MINI_SIZES = (5,)
 DAILY_MAXI_SIZES = (11, 13)
+
+"""Grid fill"""
+TIME_LIMIT = {
+    5: 0.05,
+    7: 1,
+    9: 0.5,
+    11: 0.5,
+    13: 2,
+    15: 3,
+    21: 10
+}
 
 """Clue processing"""
 RECLEAN = False
@@ -47,6 +58,8 @@ CLUE_SOURCES = [
         'delimeter': ','
     }
 ]
-with open(os.path.join(DATA_PATH, 'custom-lists.json'), 'r') as f:
-    custom_lists = json.load(f)
-    WHITELIST = custom_lists['whitelist']
+with open(os.path.join(DATA_PATH, 'custom-lists.json'), 'r') as custom_lists_data:
+    with open(os.path.join(DATA_PATH, 'english.txt'), 'r') as english_data:
+        custom_lists = json.load(custom_lists_data)
+        english = [line.strip() for line in english_data]
+        WHITELIST = set(custom_lists['whitelist']).union(english)

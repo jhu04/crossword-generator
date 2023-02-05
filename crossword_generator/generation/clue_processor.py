@@ -1,14 +1,9 @@
 import os
 import functools
-import numpy as np
 import pandas as pd
-import re
-import wordninja
-from nltk.corpus import words, wordnet
-from nltk.stem.wordnet import WordNetLemmatizer
 
 import generation.constants as const
-from generation.helper import union
+from helper import union
 
 
 class CollectiveClueProcessor:
@@ -72,52 +67,29 @@ class ClueProcessor:
         return words
 
     def clean_clues(self, clues):
-        # TODO: make this readable
         re_clue = r'(?i)\d+((A|D)|-(Across|Down))|<\/|<>'
         re_answer = r'([A-Z])\1{3,}'
         braces = [('\"', '\"'), ('(', ')'), ('[', ']')]
 
+        # remove excess columns
         clues = clues[clues.apply(self.filter, axis=1)][['clue', 'answer']]
+        # remove double quotes and surrounding braces from clues
         clues['clue'] = clues['clue'].astype(str) \
             .apply(lambda s: s.replace('\"\"', '\"').strip()) \
             .apply(lambda s: s[1:-1] if (s[0], s[-1]) in braces else s)
+        # remove excess symbols from answers
         clues['answer'] = clues['answer'].astype(str) \
             .apply(lambda s: s.replace(" ", "").replace("-", "").strip().upper())
         clues = clues[clues['answer'].str.contains(r'^[A-Z]*$')]
+        # filter answers by length
         clues['len'] = clues['answer'].apply(lambda s: len(s))
         clues = clues[clues['len'].isin(const.WORD_LENGTH_RANGE)]
+        # remove clues containing references to other clues (e.g. 1-across)
         clues = clues[~clues['clue'].str.contains(re_clue)]
+        # remove answers that use the same letter 4 times consecutively
+        # const.WHITELIST requires data/custom-lists.json and data/english.txt,
+        # i.e. generation.word_processor must be run first.
         clues = clues[(~clues['answer'].str.contains(re_answer))
-                      | (clues['answer'].isin(const.WHITELIST))]
+                      & (clues['answer'].isin(const.WHITELIST))]
 
-        answers = np.unique(clues['answer'])
-        answers = {answer: list({answer.lower(), ClueProcessor.split_words(answer).lower()})
-                    for answer in answers}
-        answers = {answer: [variant.split() for variant in variants] 
-                    for answer, variants in answers.items()}
-        
-        lem = WordNetLemmatizer()
-        p = re.compile('^[a-zA-Z]+$')
-        with open(os.path.join(const.DATA_PATH, 'dwyl-words.txt'), 'r') as f:
-            dwyl_words = [line.rstrip().lower() for line in f if p.match(line)]
-        english = set([w.lower() for w in words.words()] + 
-                      [w.lower() for w in wordnet.words()] + 
-                      dwyl_words)
-        parts_of_speech = ['n', 'v', 'a', 'r', 's']
-        english_answers = [
-            answer for answer, variants in answers.items() if any(any(any(
-                lem.lemmatize(word, pos=pos) in english 
-                for pos in parts_of_speech) 
-                for word in variant) 
-                for variant in variants)
-        ]
-        return clues[clues['answer'].isin(english_answers)]
-
-    def split_words(s):
-        """Probabilistically splits strings into English words."""
-        contractions = ['d', 'm', 's', 't', 'll', 're', 've']
-        split = wordninja.split(s)
-        for i in range(len(split)-1, 0, -1):
-            if split[i] in contractions:
-                split[i-1] += split.pop(i)
-        return ' '.join(split)
+        return clues

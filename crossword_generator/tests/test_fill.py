@@ -13,7 +13,7 @@ from tqdm import tqdm
 import generation.constants as const
 from generation.clue_processor import CollectiveClueProcessor
 from generation.grid import Grid, Selector, ProbabilisticSelector
-from generation.helper import merge_sum
+from helper import merge_sum
 
 results_path = 'tests/results'
 

@@ -60,7 +60,7 @@ def main(n, results_path='tests/results'):
             print(f'Processing grid {i}')
             g = Grid(n)
             # TODO: find optimal num_test_strings, 10 seems good?
-            g.fill(clue_processor, num_attempts=10, num_sample_strings=10000, 
+            g.fill(clue_processor, num_attempts=100, num_sample_strings=10, 
                    num_test_strings=5, time_limit=10, verbosity=0.0001)  
 
             print(f'Processed grid {i}')
@@ -93,5 +93,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # test_layout_generation()
-    test_layout_efficiency(args.size, args.num_iters)
-    # main(args.size)
+    # test_layout_efficiency(args.size, args.num_iters)
+    main(args.size)

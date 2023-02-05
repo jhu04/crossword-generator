@@ -5,16 +5,25 @@ import bson.json_util
 from distutils.util import strtobool
 
 
+def union(A, B):
+    """Union of dictionaries/sets A, B, which have the same 'object structure'"""
+    if isinstance(A, set) and isinstance(B, set):
+        return A | B
+    elif isinstance(A, dict) and isinstance(B, dict):
+        return {k: union(A[k], B[k]) for k in A}
+    else:
+        raise ValueError('Inputs do not have the same object structure.')
+
+
+def merge_sum(A: dict[int], B: dict[int]) -> dict[int]:
+    """Sum of 'merged' dictionaries A, B."""
+    return {k: A.get(k, 0) + B.get(k, 0) for k in set(A) | set(B)}
+
+
 def to_bson(obj):
-    """Recursively converts this document to a dictionary representation.
-
-    See https://stackoverflow.com/a/48413290 for implementation details.
-
-    Args:
-        obj: the object to be recursively represented as a dictionary
-
-    Returns:
-        A dictionary representation of this object.
+    """
+    Recursively converts obj to a dictionary representation.
+    See https://stackoverflow.com/a/48413290.
     """
     return bson.json_util.loads(bson.json_util.dumps(obj, default=lambda o: o.__dict__))
 

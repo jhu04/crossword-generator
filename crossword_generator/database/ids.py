@@ -2,7 +2,7 @@ import re
 from tqdm import tqdm
 
 import database.constants as const
-from database.helper import to_bson
+from helper import to_bson
 
 def rewrite_ids(query: dict, desc: str):
     """
