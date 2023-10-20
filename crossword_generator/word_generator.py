@@ -16,6 +16,7 @@ def upper_to_int(ch):
     """
     return ord(ch) - ord('A')
 
+
 def bit_mask(s, bits=0, fill='.') -> str:
     """Returns s masked by bits. O(len(s)) runtime
 
@@ -34,23 +35,25 @@ def bit_mask(s, bits=0, fill='.') -> str:
     if isinstance(bits, int):
         if 1 << len(s) <= bits:
             raise ValueError('Invalid bit mask (bits too large)')
-        
+
         res = []
         cnt = 0
         while bits > 0:
             res.append(s[-1 - cnt] if bits % 2 == 1 else fill)
             bits = bits >> 1
             cnt += 1
-        
+
         res.append(fill * (len(s) - len(res)))
         return ''.join(res)[::-1]
     else:
         raise ValueError('bits must be of type int')
 
+
 def pad(s, length, fill='.') -> str:
     return ''.join((s, fill * (length - len(s))))
 
-def generate_buckets(n=15,k=7):
+
+def generate_buckets(n=15, k=7):
     """Generates buckets
 
     Args:
@@ -75,7 +78,7 @@ def generate_buckets(n=15,k=7):
                 if len_mask == len(x):
                     for i in range(1 << len_mask):
                         key = bit_mask(x, i)
-                        
+
                         if not key in buckets:
                             buckets[key] = [x]
                         else:
@@ -83,15 +86,16 @@ def generate_buckets(n=15,k=7):
                 else:
                     for i in range(1 << len_mask):
                         key = pad(bit_mask(x[:len_mask], i), len(x))
-                        
+
                         if not key in buckets:
                             buckets[key] = [x]
                         else:
                             buckets[key].append(x)
-                
+
         # TODO: preprocess '.' * n to return all possible words of length n for n >= k
 
         return buckets
+
 
 # https://stackoverflow.com/questions/30730983/make-lru-cache-ignore-some-of-the-function-arguments
 @cached(cache={}, key=lambda buckets, word: hashkey(word))
@@ -117,28 +121,15 @@ def possible_words(word, buckets):
 
     return possible
 
+
 # unit testing
 def main():
-    # print(bit_mask('abcdef', int('010011', 2)))
-    # print(pad('a', 2))
-    
     import json
-    
+
     buckets = generate_buckets()
-    # print([(key, buckets[key]) for key in buckets if len(key) <= 2])
-    
-    # from sys import getsizeof
-    # print(getsizeof(buckets))
-    
-    # https://stackoverflow.com/questions/8230315/how-to-json-serialize-sets
-    # class SetEncoder(json.JSONEncoder):
-    #     def default(self, obj):
-    #         if isinstance(obj, set):
-    #             return list(obj)
-    #         return json.JSONEncoder.default(self, obj)
-    
     with open('buckets.json', 'w') as f:
         f.write(json.dumps(buckets))
-    
+
+
 if __name__ == '__main__':
     main()
