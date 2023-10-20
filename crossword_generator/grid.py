@@ -1,8 +1,9 @@
 from __future__ import annotations
+
+import random
 from dataclasses import dataclass, field
 from enum import Enum, auto
-import random
-from functools import cache, lru_cache
+from functools import lru_cache
 from typing import ClassVar
 
 from crossword_generator.clue_processor import ClueProcessor
