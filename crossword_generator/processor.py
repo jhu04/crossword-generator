@@ -39,14 +39,14 @@ def extract_words(grid):
             word = False
             if off_or_black(grid, r, c-1):
                 word, x, s = True, c, ""
-                while(x < len(grid[0]) and grid[r][x] != '#'):
+                while x < len(grid[0]) and grid[r][x] != '#':
                     s += grid[r][x]
                     contains_words[(r, x)]["across"] = id
                     x += 1
                 words["across"][id] = s
             if off_or_black(grid, r-1, c):
                 word, x, s = True, r, ""
-                while(x < len(grid) and grid[x][c] != '#'):
+                while x < len(grid) and grid[x][c] != '#':
                     s += grid[x][c]
                     contains_words[(x, c)]["down"] = id
                     x += 1
@@ -54,16 +54,3 @@ def extract_words(grid):
             id += word
 
     return words, contains_words
-
-
-def grid_equality(grid1, grid2):
-    """
-    Checks if two grids are identical
-    """
-    if len(grid1) != len(grid2) or len(grid1[0]) != len(grid2[0]):
-        return False
-    for i in range(len(grid1)):
-        for j in range(len(grid2)):
-            if grid1[i][j] != grid2[i][j]:
-                return False
-    return True
